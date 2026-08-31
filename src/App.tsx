@@ -1,66 +1,132 @@
 import { useMemo } from 'react'
 import { FilterProvider, useFilters } from './state/FilterContext'
 import { useMatchData } from './data/useMatchData'
-import { sumTriesByTeam, avgTackleSuccessByDate, resultBreakdown, uniqueValues } from './utils/aggregate'
+import { usePlayerMatchData } from './data/usePlayerMatchData'
+import { useKickEvents } from './data/useKickEvents'
+import {
+  sumTriesByTeam,
+  avgCarryMetresByTeam,
+  weightedRateByTeam,
+  avgTackleSuccessByDate,
+  resultBreakdown,
+  playerLeaderboard,
+  uniqueValues,
+} from './utils/aggregate'
+import { formatPercent, formatMetres } from './utils/format'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Slicer } from './components/Slicer'
 import { BarChart } from './components/charts/BarChart'
 import { LineChart } from './components/charts/LineChart'
 import { PieChart } from './components/charts/PieChart'
 import { DataTable } from './components/DataTable'
-import type { MatchTeamRow } from './types/match'
+import { PlayerTable } from './components/PlayerTable'
+import { KickAnalysisSection } from './components/KickAnalysisSection'
+import type { MatchTeamRow, PlayerMatchRow, KickEvent } from './types/match'
 
-function Dashboard({ rows }: { rows: MatchTeamRow[] }) {
+interface DashboardProps {
+  rows: MatchTeamRow[]
+  playerRows: PlayerMatchRow[]
+  kicks: KickEvent[]
+}
+
+function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
   const { filters } = useFilters()
 
   const allTeams = useMemo(() => [...uniqueValues(rows, (r) => r.team)].sort(), [rows])
   const allSeasons = useMemo(() => [...uniqueValues(rows, (r) => r.season)].sort(), [rows])
 
+  const matchesFilter = useMemo(
+    () => (team: string, season: string) =>
+      (filters.teams.length === 0 || filters.teams.includes(team)) &&
+      (filters.seasons.length === 0 || filters.seasons.includes(season)),
+    [filters],
+  )
+
   const filteredRows = useMemo(
-    () =>
-      rows.filter(
-        (row) =>
-          (filters.teams.length === 0 || filters.teams.includes(row.team)) &&
-          (filters.seasons.length === 0 || filters.seasons.includes(row.season)),
-      ),
-    [rows, filters],
+    () => rows.filter((row) => matchesFilter(row.team, row.season)),
+    [rows, matchesFilter],
+  )
+  const filteredPlayerRows = useMemo(
+    () => playerRows.filter((row) => matchesFilter(row.team, row.season)),
+    [playerRows, matchesFilter],
   )
 
   const byTeam = useMemo(() => sumTriesByTeam(filteredRows), [filteredRows])
   const byDate = useMemo(() => avgTackleSuccessByDate(filteredRows), [filteredRows])
   const byResult = useMemo(() => resultBreakdown(filteredRows), [filteredRows])
+  const carryByTeam = useMemo(() => avgCarryMetresByTeam(filteredRows), [filteredRows])
+  const scrumByTeam = useMemo(
+    () => weightedRateByTeam(filteredRows, (r) => r.scrumWon, (r) => r.scrumAttempts),
+    [filteredRows],
+  )
+  const lineoutByTeam = useMemo(
+    () => weightedRateByTeam(filteredRows, (r) => r.lineoutWon, (r) => r.lineoutThrows),
+    [filteredRows],
+  )
+  const leaderboard = useMemo(() => playerLeaderboard(filteredPlayerRows), [filteredPlayerRows])
 
   return (
-    <DashboardLayout
-      filters={<Slicer teams={allTeams} seasons={allSeasons} />}
-      charts={
-        <>
-          <div className="card">
-            <h2>チーム別 トライ数合計</h2>
-            <BarChart data={byTeam} />
-          </div>
-          <div className="card">
-            <h2>日別 タックル成功率推移</h2>
-            <LineChart data={byDate} />
-          </div>
-          <div className="card">
-            <h2>勝敗内訳</h2>
-            <PieChart data={byResult} />
-          </div>
-        </>
-      }
-      table={
+    <DashboardLayout>
+      <section className="dashboard__filters">
+        <Slicer teams={allTeams} seasons={allSeasons} />
+      </section>
+
+      <section className="dashboard__charts">
+        <div className="card">
+          <h2>チーム別 トライ数合計</h2>
+          <BarChart data={byTeam} unit="本" />
+        </div>
+        <div className="card">
+          <h2>日別 タックル成功率推移</h2>
+          <LineChart data={byDate} />
+        </div>
+        <div className="card">
+          <h2>勝敗内訳</h2>
+          <PieChart data={byResult} />
+        </div>
+        <div className="card">
+          <h2>チーム別 平均キャリー獲得m（1試合あたり）</h2>
+          <BarChart data={carryByTeam} valueFormatter={formatMetres} />
+        </div>
+        <div className="card">
+          <h2>チーム別 スクラム成功率</h2>
+          <BarChart data={scrumByTeam} valueFormatter={formatPercent} />
+        </div>
+        <div className="card">
+          <h2>チーム別 ラインアウト成功率</h2>
+          <BarChart data={lineoutByTeam} valueFormatter={formatPercent} />
+        </div>
+      </section>
+
+      <section className="dashboard__table">
         <div className="card">
           <h2>試合成績明細</h2>
           <DataTable rows={filteredRows} />
         </div>
-      }
-    />
+      </section>
+
+      <section className="dashboard__section">
+        <h2 className="dashboard__section-title">選手成績ランキング（期間合計）</h2>
+        <div className="card">
+          <PlayerTable rows={leaderboard} />
+        </div>
+      </section>
+
+      <section className="dashboard__section">
+        <h2 className="dashboard__section-title">キッキングチャート</h2>
+        <KickAnalysisSection kicks={kicks} />
+      </section>
+    </DashboardLayout>
   )
 }
 
 function App() {
-  const { rows, loading, error } = useMatchData()
+  const match = useMatchData()
+  const player = usePlayerMatchData()
+  const kick = useKickEvents()
+
+  const loading = match.loading || player.loading || kick.loading
+  const error = match.error ?? player.error ?? kick.error
 
   if (loading) {
     return <div className="status-screen">読み込み中…</div>
@@ -71,7 +137,7 @@ function App() {
 
   return (
     <FilterProvider>
-      <Dashboard rows={rows} />
+      <Dashboard rows={match.rows} playerRows={player.rows} kicks={kick.rows} />
     </FilterProvider>
   )
 }

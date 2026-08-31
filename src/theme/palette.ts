@@ -29,6 +29,13 @@ export const palette = {
     critical: '#d03b3b',
     neutral: '#898781',
   },
+  // ラグビーフィールド図（PitchChart）専用の配色。実物のピッチを模した表現のため、
+  // 通常のチャート配色ルールとは別枠で扱う。
+  pitch: {
+    grass: '#e6f2e1',
+    border: '#c3ddb8',
+    line: '#ffffff',
+  },
 } as const
 
 export const fontFamily = 'system-ui, -apple-system, "Segoe UI", sans-serif'

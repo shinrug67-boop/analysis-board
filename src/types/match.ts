@@ -1,6 +1,6 @@
 /**
  * 試合×チーム単位の集計データ1行分。public/data/match_team_summary.csv の列に対応する。
- * 生成元: scripts/build_match_summary.py（Opta生イベントログからの集計、指標定義もそちらを参照）。
+ * 生成元: scripts/build_summaries.py（Opta生イベントログからの集計、指標定義もそちらを参照）。
  */
 export interface MatchTeamRow {
   matchId: string
@@ -30,6 +30,49 @@ export interface MatchTeamRow {
   penaltiesConceded: number
   yellowCards: number
   redCards: number
+}
+
+/** 試合×選手単位の集計データ1行分。public/data/match_player_summary.csv の列に対応する。 */
+export interface PlayerMatchRow {
+  matchId: string
+  date: string
+  season: string
+  round: string
+  team: string
+  opponent: string
+  player: string
+  position: string
+  shirtNumber: string
+  minutesPlayed: number | null
+  tries: number
+  tacklesAttempted: number
+  tacklesMade: number
+  tackleSuccessRate: number | null
+  turnoversForced: number
+  carries: number
+  carryMetres: number
+  penaltiesConceded: number
+  yellowCards: number
+  redCards: number
+}
+
+/** キックイベント1行分（1キック=1行）。public/data/kick_events.csv の列に対応する。 */
+export interface KickEvent {
+  matchId: string
+  date: string
+  season: string
+  round: string
+  team: string
+  opponent: string
+  player: string
+  x: number
+  y: number
+  xEnd: number
+  yEnd: number
+  kickType: string
+  phase: string
+  outcome: string
+  metres: number
 }
 
 /** スライサーで選択中のフィルタ条件。配列が空 = その列は絞り込みなし（すべて表示）。 */

@@ -83,6 +83,29 @@ body {
   gap: 16px;
 }
 
+.dashboard__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard__section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.select {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--baseline);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
 /* --- Slicer --- */
 .slicer {
   display: flex;

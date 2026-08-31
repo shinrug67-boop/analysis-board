@@ -1,22 +1,14 @@
 import type { ReactNode } from 'react'
 
-interface DashboardLayoutProps {
-  filters: ReactNode
-  charts: ReactNode
-  table: ReactNode
-}
-
-/** ダッシュボード全体の骨格。ヘッダー→フィルタ行→チャート群→明細テーブルの順に並べる。 */
-export function DashboardLayout({ filters, charts, table }: DashboardLayoutProps) {
+/** ダッシュボード全体の骨格。ヘッダーの下に、渡された各セクションを縦に並べる。 */
+export function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="dashboard">
       <header className="dashboard__header">
         <h1>Analysis Board</h1>
         <p>ラグビー分析ダッシュボード（Japan Rugby League One D1）</p>
       </header>
-      <section className="dashboard__filters">{filters}</section>
-      <section className="dashboard__charts">{charts}</section>
-      <section className="dashboard__table">{table}</section>
+      {children}
     </div>
   )
 }
