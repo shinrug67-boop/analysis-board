@@ -1,42 +1,49 @@
-import type { SalesRow } from '../types/sales'
+import type { MatchTeamRow } from '../types/match'
 
-/** 指定キーでグルーピングし、amount/quantity を合計する。表示順は初出順を維持する。 */
-function sumBy(rows: SalesRow[], keyFn: (row: SalesRow) => string) {
+/** チーム別のトライ数合計（棒グラフ用）。トライ数が多い順に並べる。 */
+export function sumTriesByTeam(rows: MatchTeamRow[]) {
+  const totals = new Map<string, number>()
   const order: string[] = []
-  const totals = new Map<string, { amount: number; quantity: number }>()
-
   for (const row of rows) {
-    const key = keyFn(row)
-    if (!totals.has(key)) {
-      totals.set(key, { amount: 0, quantity: 0 })
-      order.push(key)
+    if (!totals.has(row.team)) {
+      totals.set(row.team, 0)
+      order.push(row.team)
     }
-    const entry = totals.get(key)!
-    entry.amount += row.amount
-    entry.quantity += row.quantity
+    totals.set(row.team, totals.get(row.team)! + row.tries)
   }
-
-  return order.map((key) => ({ key, ...totals.get(key)! }))
+  return order
+    .map((team) => ({ key: team, tries: totals.get(team)! }))
+    .sort((a, b) => b.tries - a.tries)
 }
 
-/** 地域別の売上合計（棒グラフ用）。 */
-export function sumByRegion(rows: SalesRow[]) {
-  return sumBy(rows, (r) => r.region)
+/** 日付別のタックル成功率の平均推移（折れ線グラフ用）。 */
+export function avgTackleSuccessByDate(rows: MatchTeamRow[]) {
+  const sums = new Map<string, { total: number; count: number }>()
+  for (const row of rows) {
+    if (row.tackleSuccessRate === null) continue
+    const entry = sums.get(row.date) ?? { total: 0, count: 0 }
+    entry.total += row.tackleSuccessRate
+    entry.count += 1
+    sums.set(row.date, entry)
+  }
+  return [...sums.entries()]
+    .map(([date, { total, count }]) => ({ key: date, rate: total / count }))
+    .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
 }
 
-/** カテゴリ別の売上合計（円グラフ用）。 */
-export function sumByCategory(rows: SalesRow[]) {
-  return sumBy(rows, (r) => r.category)
-}
-
-/** 日付順に並べた日別売上合計（折れ線グラフ用）。 */
-export function sumByDate(rows: SalesRow[]) {
-  const grouped = sumBy(rows, (r) => r.date)
-  return grouped.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+/** 勝敗内訳（ドーナツグラフ用）。表示順を W → L → D に固定する。 */
+export function resultBreakdown(rows: MatchTeamRow[]) {
+  const counts = { W: 0, L: 0, D: 0 }
+  for (const row of rows) counts[row.result] += 1
+  return [
+    { key: 'W' as const, label: '勝ち', count: counts.W },
+    { key: 'L' as const, label: '負け', count: counts.L },
+    { key: 'D' as const, label: '引き分け', count: counts.D },
+  ].filter((r) => r.count > 0)
 }
 
 /** 列に含まれるユニーク値を初出順で返す（スライサーの選択肢生成用）。 */
-export function uniqueValues(rows: SalesRow[], keyFn: (row: SalesRow) => string) {
+export function uniqueValues(rows: MatchTeamRow[], keyFn: (row: MatchTeamRow) => string) {
   const seen = new Set<string>()
   const result: string[] = []
   for (const row of rows) {

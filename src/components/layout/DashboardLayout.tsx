@@ -12,7 +12,7 @@ export function DashboardLayout({ filters, charts, table }: DashboardLayoutProps
     <div className="dashboard">
       <header className="dashboard__header">
         <h1>Analysis Board</h1>
-        <p>売上データダッシュボード（サンプルデータ）</p>
+        <p>ラグビー分析ダッシュボード（Japan Rugby League One D1）</p>
       </header>
       <section className="dashboard__filters">{filters}</section>
       <section className="dashboard__charts">{charts}</section>

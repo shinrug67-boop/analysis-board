@@ -23,6 +23,12 @@ export const palette = {
     '#4a3aa7', // violet
     '#e34948', // red
   ],
+  // status色（良い/悪い/中立）。categoricalとは別枠で、勝敗など状態を表す場面でのみ使う。
+  status: {
+    good: '#0ca30c',
+    critical: '#d03b3b',
+    neutral: '#898781',
+  },
 } as const
 
 export const fontFamily = 'system-ui, -apple-system, "Segoe UI", sans-serif'

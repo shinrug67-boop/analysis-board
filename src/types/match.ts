@@ -1,0 +1,39 @@
+/**
+ * 試合×チーム単位の集計データ1行分。public/data/match_team_summary.csv の列に対応する。
+ * 生成元: scripts/build_match_summary.py（Opta生イベントログからの集計、指標定義もそちらを参照）。
+ */
+export interface MatchTeamRow {
+  matchId: string
+  date: string // YYYY-MM-DD
+  season: string
+  round: string
+  team: string
+  opponent: string
+  isHome: boolean
+  ownScore: number
+  oppScore: number
+  result: 'W' | 'L' | 'D'
+  tries: number
+  tacklesAttempted: number
+  tacklesMade: number
+  tackleSuccessRate: number | null
+  carries: number
+  carryMetres: number
+  lineoutThrows: number
+  lineoutWon: number
+  lineoutSuccessRate: number | null
+  scrumAttempts: number
+  scrumWon: number
+  scrumSuccessRate: number | null
+  turnoversConceded: number
+  turnoversWon: number
+  penaltiesConceded: number
+  yellowCards: number
+  redCards: number
+}
+
+/** スライサーで選択中のフィルタ条件。配列が空 = その列は絞り込みなし（すべて表示）。 */
+export interface FilterState {
+  teams: string[]
+  seasons: string[]
+}

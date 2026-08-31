@@ -2,24 +2,28 @@ import { useMemo } from 'react'
 import { EChart } from './EChart'
 import type { EChartsOption } from './EChart'
 import { palette, fontFamily } from '../../theme/palette'
-import { formatYen } from '../../utils/format'
 
 interface PieChartProps {
-  data: { key: string; amount: number }[]
-  colorMap: Record<string, string>
+  data: { key: 'W' | 'L' | 'D'; label: string; count: number }[]
+}
+
+const RESULT_COLOR: Record<'W' | 'L' | 'D', string> = {
+  W: palette.status.good,
+  L: palette.status.critical,
+  D: palette.status.neutral,
 }
 
 /**
- * カテゴリ別の売上構成比を示すドーナツグラフ。
- * 色が識別チャネルそのものになるため、直接ラベル(名称+割合)と凡例の両方を付ける。
+ * 勝敗内訳（勝ち/負け/引き分け）を示すドーナツグラフ。
+ * これは名義カテゴリではなく状態（良い/悪い/中立）を表すため、categoricalではなくstatus色を使う。
  */
-export function PieChart({ data, colorMap }: PieChartProps) {
+export function PieChart({ data }: PieChartProps) {
   const option = useMemo<EChartsOption>(
     () => ({
       textStyle: { fontFamily, color: palette.textPrimary },
       tooltip: {
         trigger: 'item',
-        valueFormatter: (v) => formatYen(Number(v)),
+        valueFormatter: (v) => `${v}試合`,
       },
       legend: {
         bottom: 0,
@@ -45,14 +49,14 @@ export function PieChart({ data, colorMap }: PieChartProps) {
           },
           labelLine: { lineStyle: { color: palette.baseline } },
           data: data.map((d) => ({
-            name: d.key,
-            value: d.amount,
-            itemStyle: { color: colorMap[d.key] ?? palette.categorical[0] },
+            name: d.label,
+            value: d.count,
+            itemStyle: { color: RESULT_COLOR[d.key] },
           })),
         },
       ],
     }),
-    [data, colorMap],
+    [data],
   )
 
   return <EChart option={option} height={360} />

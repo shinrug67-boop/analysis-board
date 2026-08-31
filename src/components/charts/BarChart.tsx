@@ -2,50 +2,50 @@ import { useMemo } from 'react'
 import { EChart } from './EChart'
 import type { EChartsOption } from './EChart'
 import { palette, fontFamily } from '../../theme/palette'
-import { formatYen } from '../../utils/format'
 
 interface BarChartProps {
-  data: { key: string; amount: number }[]
-  colorMap: Record<string, string>
+  data: { key: string; tries: number }[]
 }
 
-/** 地域別の売上合計を示す棒グラフ。バーの色はcolorMapで系列（地域）ごとに固定される。 */
-export function BarChart({ data, colorMap }: BarChartProps) {
+/**
+ * チーム別のトライ数合計を示す棒グラフ。
+ * 系列は1つ（他の次元との掛け合わせがない）ため、単色（slot 1）で統一し、
+ * チームの識別はx軸ラベルに任せる。
+ */
+export function BarChart({ data }: BarChartProps) {
   const option = useMemo<EChartsOption>(
     () => ({
       textStyle: { fontFamily, color: palette.textPrimary },
-      grid: { left: 56, right: 16, top: 24, bottom: 32 },
+      grid: { left: 40, right: 16, top: 24, bottom: 72 },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        valueFormatter: (v) => formatYen(Number(v)),
+        valueFormatter: (v) => `${v}本`,
       },
       xAxis: {
         type: 'category',
         data: data.map((d) => d.key),
         axisLine: { lineStyle: { color: palette.baseline } },
         axisTick: { show: false },
-        axisLabel: { color: palette.textSecondary },
+        axisLabel: { color: palette.textSecondary, rotate: 45, interval: 0 },
       },
       yAxis: {
         type: 'value',
-        axisLabel: { color: palette.muted, formatter: (v: number) => formatYen(v) },
+        name: '本',
+        axisLabel: { color: palette.muted },
         splitLine: { lineStyle: { color: palette.gridline } },
       },
       series: [
         {
           type: 'bar',
-          data: data.map((d) => ({
-            value: d.amount,
-            itemStyle: { color: colorMap[d.key] ?? palette.categorical[0] },
-          })),
+          data: data.map((d) => d.tries),
           barMaxWidth: 24,
-          itemStyle: { borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: palette.categorical[0], borderRadius: [4, 4, 0, 0] },
         },
       ],
     }),
-    [data, colorMap],
+    [data],
   )
 
-  return <EChart option={option} />
+  return <EChart option={option} height={360} />
 }

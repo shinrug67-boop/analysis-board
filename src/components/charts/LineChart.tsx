@@ -2,22 +2,22 @@ import { useMemo } from 'react'
 import { EChart } from './EChart'
 import type { EChartsOption } from './EChart'
 import { palette, fontFamily } from '../../theme/palette'
-import { formatYen, formatShortDate } from '../../utils/format'
+import { formatPercent, formatShortDate } from '../../utils/format'
 
 interface LineChartProps {
-  data: { key: string; amount: number }[]
+  data: { key: string; rate: number }[]
 }
 
-/** 日別の売上推移を示す折れ線グラフ。単一系列のためタイトルが凡例の代わりを果たす。 */
+/** 日付別のタックル成功率の平均推移を示す折れ線グラフ。単一系列のためタイトルが凡例の代わりを果たす。 */
 export function LineChart({ data }: LineChartProps) {
   const option = useMemo<EChartsOption>(
     () => ({
       textStyle: { fontFamily, color: palette.textPrimary },
-      grid: { left: 56, right: 16, top: 24, bottom: 32 },
+      grid: { left: 48, right: 16, top: 24, bottom: 32 },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'cross' },
-        valueFormatter: (v) => formatYen(Number(v)),
+        valueFormatter: (v) => formatPercent(Number(v)),
       },
       xAxis: {
         type: 'category',
@@ -29,13 +29,15 @@ export function LineChart({ data }: LineChartProps) {
       },
       yAxis: {
         type: 'value',
-        axisLabel: { color: palette.muted, formatter: (v: number) => formatYen(v) },
+        min: 0,
+        max: 1,
+        axisLabel: { color: palette.muted, formatter: (v: number) => formatPercent(v) },
         splitLine: { lineStyle: { color: palette.gridline } },
       },
       series: [
         {
           type: 'line',
-          data: data.map((d) => d.amount),
+          data: data.map((d) => d.rate),
           lineStyle: { width: 2, color: palette.categorical[0] },
           itemStyle: { color: palette.categorical[0] },
           symbol: 'circle',

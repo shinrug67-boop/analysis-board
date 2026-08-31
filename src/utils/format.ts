@@ -1,10 +1,18 @@
-/** 金額を「¥12,345」のような表示用文字列に整形する。 */
-export function formatYen(value: number): string {
-  return `¥${Math.round(value).toLocaleString('ja-JP')}`
+/** 0〜1の比率を「86.4%」のような表示用文字列に整形する。 */
+export function formatPercent(value: number | null): string {
+  return value === null ? '—' : `${(value * 100).toFixed(1)}%`
 }
 
-/** 日付文字列 (YYYY-MM-DD) を「M/D」表示に整形する（軸ラベル用）。 */
+/** メートル数を「1,305m」のような表示用文字列に整形する。 */
+export function formatMetres(value: number): string {
+  return `${Math.round(value).toLocaleString('ja-JP')}m`
+}
+
+/**
+ * 日付文字列 (YYYY-MM-DD) を「'24/12/9」表示に整形する（軸ラベル用）。
+ * シーズン（12月〜翌年6月）をまたいで表示するため、月日だけだと年が曖昧になり紛らわしい。
+ */
 export function formatShortDate(dateStr: string): string {
-  const [, month, day] = dateStr.split('-')
-  return `${Number(month)}/${Number(day)}`
+  const [year, month, day] = dateStr.split('-')
+  return `'${year.slice(2)}/${Number(month)}/${Number(day)}`
 }

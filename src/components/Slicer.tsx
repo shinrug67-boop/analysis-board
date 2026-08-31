@@ -1,48 +1,48 @@
 import { useFilters } from '../state/FilterContext'
 
 interface SlicerProps {
-  regions: string[]
-  categories: string[]
+  teams: string[]
+  seasons: string[]
 }
 
 /**
- * 地域・カテゴリを絞り込むスライサー。チャート・テーブルより上の1行に置き、
+ * チーム・シーズンを絞り込むスライサー。チャート・テーブルより上の1行に置き、
  * 選択状態はFilterContext経由でダッシュボード全体に反映される。
  */
-export function Slicer({ regions, categories }: SlicerProps) {
-  const { filters, toggleRegion, toggleCategory, reset } = useFilters()
-  const hasActiveFilter = filters.regions.length > 0 || filters.categories.length > 0
+export function Slicer({ teams, seasons }: SlicerProps) {
+  const { filters, toggleTeam, toggleSeason, reset } = useFilters()
+  const hasActiveFilter = filters.teams.length > 0 || filters.seasons.length > 0
 
   return (
     <div className="slicer" role="group" aria-label="データの絞り込み">
       <div className="slicer__group">
-        <span className="slicer__label">地域</span>
+        <span className="slicer__label">シーズン</span>
         <div className="slicer__chips">
-          {regions.map((region) => (
+          {seasons.map((season) => (
             <button
-              key={region}
+              key={season}
               type="button"
-              className={`chip ${filters.regions.includes(region) ? 'is-active' : ''}`}
-              aria-pressed={filters.regions.includes(region)}
-              onClick={() => toggleRegion(region)}
+              className={`chip ${filters.seasons.includes(season) ? 'is-active' : ''}`}
+              aria-pressed={filters.seasons.includes(season)}
+              onClick={() => toggleSeason(season)}
             >
-              {region}
+              {season}
             </button>
           ))}
         </div>
       </div>
       <div className="slicer__group">
-        <span className="slicer__label">カテゴリ</span>
+        <span className="slicer__label">チーム</span>
         <div className="slicer__chips">
-          {categories.map((category) => (
+          {teams.map((team) => (
             <button
-              key={category}
+              key={team}
               type="button"
-              className={`chip ${filters.categories.includes(category) ? 'is-active' : ''}`}
-              aria-pressed={filters.categories.includes(category)}
-              onClick={() => toggleCategory(category)}
+              className={`chip ${filters.teams.includes(team) ? 'is-active' : ''}`}
+              aria-pressed={filters.teams.includes(team)}
+              onClick={() => toggleTeam(team)}
             >
-              {category}
+              {team}
             </button>
           ))}
         </div>
