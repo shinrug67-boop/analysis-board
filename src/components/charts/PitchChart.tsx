@@ -123,7 +123,7 @@ export function PitchChart({ kicks }: PitchChartProps) {
             ],
             lineStyle: {
               color: getKickTypeColor(k.kickType),
-              opacity: k.kickType === 'Touch Kick' ? 0.6 : 0.4,
+              opacity: k.kickType === 'Touch Kick' ? 0.75 : 0.55,
             },
             value: k,
           })) as unknown as LinesSeriesOption['data'],

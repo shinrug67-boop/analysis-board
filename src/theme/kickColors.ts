@@ -1,12 +1,16 @@
-/** キッキングチャートでのキック種別（ActionTypeName）ごとの色分け。ユーザー指定の配色。 */
+/**
+ * キッキングチャートでのキック種別（ActionTypeName）ごとの色分け。ユーザー指定の配色をベースに、
+ * フィールドを濃い緑にした上でも視認できるよう明度を調整している
+ * （特にBombは緑系のため濃い緑の背景に沈みやすく、Territorialも同様に明るめへ調整）。
+ */
 export const KICK_TYPE_COLORS: Record<string, string> = {
-  Territorial: '#a6790a', // 暗め黄色
+  Territorial: '#e0a824', // 暗め黄色（濃い緑の背景でも視認できる明るさに調整）
   'Touch Kick': '#ffffff', // 白
-  'Cross Pitch': '#b5591f', // 暗めオレンジ
-  Box: '#a8527a', // 暗めピンク
-  Bomb: '#2e8b57', // 緑
-  Low: '#4fc3d9', // 水色
-  Chip: '#7b4fa0', // 紫
+  'Cross Pitch': '#d4692a', // 暗めオレンジ
+  Box: '#c96b93', // 暗めピンク
+  Bomb: '#7fd858', // 緑（背景の緑に沈まないよう明るいライムグリーンに調整）
+  Low: '#5fd4ea', // 水色
+  Chip: '#9a6cc2', // 紫
 }
 
 const FALLBACK_COLOR = '#898781'
