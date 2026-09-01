@@ -132,6 +132,10 @@ export interface ExtendedMatchRow extends MatchTeamRow {
    * コンテストキックが0本ならnull。
    */
   contestKickEffectiveRate: number | null
+  /** ボール保持率（自チームpossessionSeconds / (自チーム+相手チームのpossessionSeconds)）。 */
+  possessionShare: number | null
+  /** 敵陣22m侵入からトライに至った割合（entries22Tries/entries22）。侵入0回ならnull。 */
+  entries22TryRate: number | null
 }
 
 const CONTEST_KICK_TYPES = new Set(['Box', 'Bomb'])
@@ -147,9 +151,12 @@ function isContestKickEffective(outcome: string): boolean {
  */
 export function attachDerivedMetrics(rows: MatchTeamRow[], kicks: KickEvent[]): ExtendedMatchRow[] {
   const concededByMatch = new Map<string, Map<string, number>>()
+  const possessionByMatch = new Map<string, Map<string, number>>()
   for (const row of rows) {
     if (!concededByMatch.has(row.matchId)) concededByMatch.set(row.matchId, new Map())
     concededByMatch.get(row.matchId)!.set(row.team, row.penaltiesConceded)
+    if (!possessionByMatch.has(row.matchId)) possessionByMatch.set(row.matchId, new Map())
+    possessionByMatch.get(row.matchId)!.set(row.team, row.possessionSeconds)
   }
 
   const kicksByMatchTeam = new Map<string, KickEvent[]>()
@@ -172,7 +179,21 @@ export function attachDerivedMetrics(rows: MatchTeamRow[], kicks: KickEvent[]): 
     const effectiveContestKicks = contestKicks.filter((k) => isContestKickEffective(k.outcome)).length
     const contestKickEffectiveRate = contestKicks.length ? effectiveContestKicks / contestKicks.length : null
 
-    return { ...row, penaltiesWon, metresPerCarry, kickErrorRate, contestKickEffectiveRate }
+    const opponentPossessionSeconds = possessionByMatch.get(row.matchId)?.get(row.opponent) ?? 0
+    const totalPossessionSeconds = row.possessionSeconds + opponentPossessionSeconds
+    const possessionShare = totalPossessionSeconds ? row.possessionSeconds / totalPossessionSeconds : null
+
+    const entries22TryRate = row.entries22 ? row.entries22Tries / row.entries22 : null
+
+    return {
+      ...row,
+      penaltiesWon,
+      metresPerCarry,
+      kickErrorRate,
+      contestKickEffectiveRate,
+      possessionShare,
+      entries22TryRate,
+    }
   })
 }
 
@@ -251,6 +272,30 @@ const WIN_LOSS_METRICS: WinLossMetricDef[] = [
     key: 'contestKickEffectiveRate',
     higherIsBetter: true,
     getValue: (r) => r.contestKickEffectiveRate,
+    format: formatPercent,
+  },
+  {
+    key: 'possessionShare',
+    higherIsBetter: true,
+    getValue: (r) => r.possessionShare,
+    format: formatPercent,
+  },
+  {
+    key: 'lineBreaks',
+    higherIsBetter: true,
+    getValue: (r) => r.lineBreaks,
+    format: (v) => `${v.toFixed(1)}`,
+  },
+  {
+    key: 'entries22',
+    higherIsBetter: true,
+    getValue: (r) => r.entries22,
+    format: (v) => `${v.toFixed(1)}`,
+  },
+  {
+    key: 'entries22TryRate',
+    higherIsBetter: true,
+    getValue: (r) => r.entries22TryRate,
     format: formatPercent,
   },
 ]

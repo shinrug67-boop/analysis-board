@@ -63,6 +63,9 @@ python3 scripts/build_summaries.py --input /path/to/生イベントログ.csv
 | lineout_success_rate | Lineout Throwのうち`ActionResultName`が`"Won"`で始まる件数の割合 |
 | scrum_success_rate | 自チーム投入のOffensive Scrum（Reset除く）のうち`"Won"`で始まる件数の割合 |
 | turnovers_conceded / won | conceded=自チームの`Turnover×"Error on Attack"`件数、won=同一試合の相手チームのconceded件数 |
+| possession_seconds | `actionName=="Possession"` の `ps_endstamp - ps_timestamp` 合計（ボール保持時間）。勝敗差分析では相手チームとの合計に対する比率（ボール保持率）として使用 |
+| line_breaks | `actionName=="Attacking Qualities" AND ActionTypeName=="Initial Break"` の件数（ラインブレイク数） |
+| entries_22 / entries_22_tries | `actionName=="Attacking 22 Entry"` の件数（敵陣22m侵入回数）。tries はそのうち`ActionTypeName=="22 Entry Outcome - Try"`の件数（22m侵入→トライ転換率の分子） |
 
 **試合×選手のみ**
 

@@ -90,6 +90,10 @@ const ja = {
   metric_metresPerCarry: 'キャリー1回あたり獲得m',
   metric_kickErrorRate: 'キックのミス率',
   metric_contestKickEffectiveRate: 'コンテストキック有効利用率（Box+Bomb）',
+  metric_possessionShare: 'ボール保持率',
+  metric_lineBreaks: 'ラインブレイク数',
+  metric_entries22: '敵陣22m侵入回数',
+  metric_entries22TryRate: '22m侵入→トライ転換率',
 
   // --- キッキングチャート ---
   round: 'ラウンド',
@@ -196,6 +200,10 @@ const en: Dict = {
   metric_metresPerCarry: 'Metres per carry',
   metric_kickErrorRate: 'Kick error rate',
   metric_contestKickEffectiveRate: 'Contestable kick effective rate (Box+Bomb)',
+  metric_possessionShare: 'Possession share',
+  metric_lineBreaks: 'Line breaks',
+  metric_entries22: 'Attacking 22 entries',
+  metric_entries22TryRate: '22 entry-to-try conversion rate',
 
   round: 'Round',
   showAllRounds: 'Show all rounds',

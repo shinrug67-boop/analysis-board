@@ -30,6 +30,14 @@ export interface MatchTeamRow {
   penaltiesConceded: number
   yellowCards: number
   redCards: number
+  /** ボール保持時間（秒）。Opta Possessionイベントの継続時間合計。 */
+  possessionSeconds: number
+  /** ラインブレイク数（Attacking Qualities × Initial Break）。 */
+  lineBreaks: number
+  /** 敵陣22m侵入回数。 */
+  entries22: number
+  /** 敵陣22m侵入がトライに至った回数。 */
+  entries22Tries: number
 }
 
 /** 試合×選手単位の集計データ1行分。public/data/match_player_summary.csv の列に対応する。 */

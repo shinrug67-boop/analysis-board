@@ -31,5 +31,9 @@ export function useMatchData() {
     penaltiesConceded: Number(r.penalties_conceded),
     yellowCards: Number(r.yellow_cards),
     redCards: Number(r.red_cards),
+    possessionSeconds: Number(r.possession_seconds),
+    lineBreaks: Number(r.line_breaks),
+    entries22: Number(r.entries_22),
+    entries22Tries: Number(r.entries_22_tries),
   }))
 }

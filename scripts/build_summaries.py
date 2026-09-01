@@ -31,6 +31,7 @@ NEEDED_COLUMNS = [
     "actionName", "ActionResultName", "ActionTypeName", "qualifier3Name",
     "Metres2", "playerpositionName", "playerShirtNumber", "PlayerGameTimeMinutes",
     "x_coord", "y_coord", "x_coord_end", "y_coord_end",
+    "ps_timestamp", "ps_endstamp",
 ]
 
 TEAM_FIELDNAMES = [
@@ -44,6 +45,7 @@ TEAM_FIELDNAMES = [
     "turnovers_conceded", "turnovers_won",
     "penalties_conceded",
     "yellow_cards", "red_cards",
+    "possession_seconds", "line_breaks", "entries_22", "entries_22_tries",
 ]
 
 PLAYER_FIELDNAMES = [
@@ -98,6 +100,7 @@ def new_team_stat():
         "turnovers_conceded": 0,
         "penalties_conceded": 0,
         "yellow_cards": 0, "red_cards": 0,
+        "possession_seconds": 0.0, "line_breaks": 0, "entries_22": 0, "entries_22_tries": 0,
     }
 
 
@@ -138,6 +141,7 @@ def process(input_path: str, competition: str):
         i_metres2 = idx["Metres2"]
         i_pos, i_shirt, i_mins = idx["playerpositionName"], idx["playerShirtNumber"], idx["PlayerGameTimeMinutes"]
         i_x, i_y, i_xe, i_ye = idx["x_coord"], idx["y_coord"], idx["x_coord_end"], idx["y_coord_end"]
+        i_ps, i_pe = idx["ps_timestamp"], idx["ps_endstamp"]
 
         max_idx = max(idx.values())
         row_count = 0
@@ -196,6 +200,16 @@ def process(input_path: str, competition: str):
                     ts["yellow_cards"] += 1
                 elif atype == "Red Card":
                     ts["red_cards"] += 1
+            elif action == "Possession":
+                dur = safe_float(row[i_pe]) - safe_float(row[i_ps])
+                if dur > 0:
+                    ts["possession_seconds"] += dur
+            elif action == "Attacking Qualities" and row[i_atype] == "Initial Break":
+                ts["line_breaks"] += 1
+            elif action == "Attacking 22 Entry":
+                ts["entries_22"] += 1
+                if row[i_atype] == "22 Entry Outcome - Try":
+                    ts["entries_22_tries"] += 1
 
             # --- 選手集計（選手が紐付くイベントのみ） ---
             if player_name:
@@ -281,6 +295,10 @@ def finalize_team_rows(team_matches: dict) -> list[dict]:
             "turnovers_conceded": s["turnovers_conceded"], "turnovers_won": turnovers_won,
             "penalties_conceded": s["penalties_conceded"],
             "yellow_cards": s["yellow_cards"], "red_cards": s["red_cards"],
+            "possession_seconds": round(s["possession_seconds"], 1),
+            "line_breaks": s["line_breaks"],
+            "entries_22": s["entries_22"],
+            "entries_22_tries": s["entries_22_tries"],
         })
     rows.sort(key=lambda r: (r["date"] or "", r["team"]))
     return rows
