@@ -87,4 +87,5 @@ export interface KickEvent {
 export interface FilterState {
   teams: string[]
   seasons: string[]
+  opponents: string[]
 }

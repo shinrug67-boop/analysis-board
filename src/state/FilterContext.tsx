@@ -5,10 +5,11 @@ interface FilterContextValue {
   filters: FilterState
   toggleTeam: (team: string) => void
   toggleSeason: (season: string) => void
+  toggleOpponent: (opponent: string) => void
   reset: () => void
 }
 
-const EMPTY_FILTERS: FilterState = { teams: [], seasons: [] }
+const EMPTY_FILTERS: FilterState = { teams: [], seasons: [], opponents: [] }
 
 const FilterContext = createContext<FilterContextValue | null>(null)
 
@@ -16,7 +17,7 @@ function toggleValue(list: string[], value: string): string[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
 }
 
-/** スライサー（チーム・シーズン）の選択状態をダッシュボード全体で共有するためのProvider。 */
+/** スライサー（チーム・シーズン・対戦相手）の選択状態をダッシュボード全体で共有するためのProvider。 */
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS)
 
@@ -27,6 +28,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setFilters((prev) => ({ ...prev, teams: toggleValue(prev.teams, team) })),
       toggleSeason: (season) =>
         setFilters((prev) => ({ ...prev, seasons: toggleValue(prev.seasons, season) })),
+      toggleOpponent: (opponent) =>
+        setFilters((prev) => ({ ...prev, opponents: toggleValue(prev.opponents, opponent) })),
       reset: () => setFilters(EMPTY_FILTERS),
     }),
     [filters],

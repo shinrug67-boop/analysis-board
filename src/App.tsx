@@ -38,20 +38,22 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
 
   const allTeams = useMemo(() => [...uniqueValues(rows, (r) => r.team)].sort(), [rows])
   const allSeasons = useMemo(() => [...uniqueValues(rows, (r) => r.season)].sort(), [rows])
+  const allOpponents = useMemo(() => [...uniqueValues(rows, (r) => r.opponent)].sort(), [rows])
 
   const matchesFilter = useMemo(
-    () => (team: string, season: string) =>
+    () => (team: string, season: string, opponent: string) =>
       (filters.teams.length === 0 || filters.teams.includes(team)) &&
-      (filters.seasons.length === 0 || filters.seasons.includes(season)),
+      (filters.seasons.length === 0 || filters.seasons.includes(season)) &&
+      (filters.opponents.length === 0 || filters.opponents.includes(opponent)),
     [filters],
   )
 
   const filteredRows = useMemo(
-    () => rows.filter((row) => matchesFilter(row.team, row.season)),
+    () => rows.filter((row) => matchesFilter(row.team, row.season, row.opponent)),
     [rows, matchesFilter],
   )
   const filteredPlayerRows = useMemo(
-    () => playerRows.filter((row) => matchesFilter(row.team, row.season)),
+    () => playerRows.filter((row) => matchesFilter(row.team, row.season, row.opponent)),
     [playerRows, matchesFilter],
   )
 
@@ -72,7 +74,7 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
   return (
     <DashboardLayout>
       <section className="dashboard__filters">
-        <Slicer teams={allTeams} seasons={allSeasons} />
+        <Slicer teams={allTeams} seasons={allSeasons} opponents={allOpponents} />
       </section>
 
       <section className="dashboard__charts">
