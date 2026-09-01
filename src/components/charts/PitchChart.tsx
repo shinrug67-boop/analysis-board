@@ -53,11 +53,36 @@ const PITCH_LINES = [
   segment([FIELD_X[1] - 15, 0], [FIELD_X[1] - 15, 100], 0.75, true),
 ]
 
+// 上から下へのグラデーション（画面座標基準）。単色の芝生よりも矢印が視認しやすくなるよう
+// 明暗をつけている。
+function verticalGradient(light: string, dark: string) {
+  return {
+    type: 'linear' as const,
+    x: 0,
+    y: 0,
+    x2: 0,
+    y2: 1,
+    colorStops: [
+      { offset: 0, color: light },
+      { offset: 1, color: dark },
+    ],
+  }
+}
+
 // 芝生（ピッチ+インゴール）と、インゴールを少し濃い緑で塗り分けるための領域。
 const PITCH_AREAS = [
-  [{ coord: [FIELD_X[0], DEAD_Y[0]], itemStyle: { color: palette.pitch.grass } }, { coord: [FIELD_X[1], DEAD_Y[1]] }],
-  [{ coord: [FIELD_X[0], DEAD_Y[0]], itemStyle: { color: palette.pitch.inGoal } }, { coord: [FIELD_X[1], 0] }],
-  [{ coord: [FIELD_X[0], 100], itemStyle: { color: palette.pitch.inGoal } }, { coord: [FIELD_X[1], DEAD_Y[1]] }],
+  [
+    { coord: [FIELD_X[0], DEAD_Y[0]], itemStyle: { color: verticalGradient(palette.pitch.grassLight, palette.pitch.grassDark) } },
+    { coord: [FIELD_X[1], DEAD_Y[1]] },
+  ],
+  [
+    { coord: [FIELD_X[0], DEAD_Y[0]], itemStyle: { color: verticalGradient(palette.pitch.inGoalLight, palette.pitch.inGoalDark) } },
+    { coord: [FIELD_X[1], 0] },
+  ],
+  [
+    { coord: [FIELD_X[0], 100], itemStyle: { color: verticalGradient(palette.pitch.inGoalLight, palette.pitch.inGoalDark) } },
+    { coord: [FIELD_X[1], DEAD_Y[1]] },
+  ],
 ]
 
 interface KickTooltipParams {

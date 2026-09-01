@@ -32,9 +32,12 @@ export const palette = {
   // ラグビーフィールド図（PitchChart）専用の配色。実物のピッチを模した表現のため、
   // 通常のチャート配色ルールとは別枠で扱う。
   // 濃いめの緑にすることで、白色のTouch Kick矢印など明るい色を視認しやすくしている。
+  // grass/inGoalはグラデーション表現のためLight/Darkの2値を持つ。
   pitch: {
-    grass: '#3f7d46',
-    inGoal: '#336b39',
+    grassLight: '#5da366',
+    grassDark: '#417c48',
+    inGoalLight: '#4c8a53',
+    inGoalDark: '#33693a',
     border: '#2c5a32',
     line: '#eaf5e6',
   },
