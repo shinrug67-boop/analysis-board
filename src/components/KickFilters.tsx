@@ -8,7 +8,8 @@ interface KickFiltersProps {
   rounds: string[]
   selectedRounds: string[]
   onToggleRound: (round: string) => void
-  onSelectAllRounds: () => void
+  /** 全ラウンド選択中なら全解除、そうでなければ全選択にするトグル。 */
+  onToggleAllRounds: () => void
 }
 
 /**
@@ -25,7 +26,7 @@ export function KickFilters({
   rounds,
   selectedRounds,
   onToggleRound,
-  onSelectAllRounds,
+  onToggleAllRounds,
 }: KickFiltersProps) {
   const allRoundsSelected = rounds.length > 0 && rounds.every((r) => selectedRounds.includes(r))
 
@@ -67,8 +68,8 @@ export function KickFilters({
           ))}
         </div>
       </div>
-      <button type="button" className="slicer__reset" onClick={onSelectAllRounds} disabled={allRoundsSelected}>
-        全ラウンド表示
+      <button type="button" className="slicer__reset" onClick={onToggleAllRounds} disabled={rounds.length === 0}>
+        {allRoundsSelected ? '全ラウンド解除' : '全ラウンド表示'}
       </button>
     </div>
   )

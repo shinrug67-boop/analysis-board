@@ -68,7 +68,11 @@ export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
             base.includes(round) ? base.filter((r) => r !== round) : [...base, round],
           )
         }}
-        onSelectAllRounds={() => setSelectedRoundsOverride(null)}
+        onToggleAllRounds={() => {
+          const allSelected =
+            roundsForSelection.length > 0 && roundsForSelection.every((r) => selectedRounds.includes(r))
+          setSelectedRoundsOverride(allSelected ? [] : null)
+        }}
       />
       <div className="card">
         <h2>
