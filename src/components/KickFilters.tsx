@@ -1,3 +1,5 @@
+import { useLanguage } from '../i18n/LanguageContext'
+
 interface KickFiltersProps {
   seasons: string[]
   season: string
@@ -28,12 +30,13 @@ export function KickFilters({
   onToggleRound,
   onToggleAllRounds,
 }: KickFiltersProps) {
+  const { t } = useLanguage()
   const allRoundsSelected = rounds.length > 0 && rounds.every((r) => selectedRounds.includes(r))
 
   return (
-    <div className="slicer" role="group" aria-label="キック分析の絞り込み">
+    <div className="slicer" role="group" aria-label={t('sectionKickingChart')}>
       <div className="slicer__group">
-        <span className="slicer__label">シーズン</span>
+        <span className="slicer__label">{t('season')}</span>
         <select className="select" value={season} onChange={(e) => onSeasonChange(e.target.value)}>
           {seasons.map((s) => (
             <option key={s} value={s}>
@@ -43,17 +46,17 @@ export function KickFilters({
         </select>
       </div>
       <div className="slicer__group">
-        <span className="slicer__label">チーム</span>
+        <span className="slicer__label">{t('team')}</span>
         <select className="select" value={team} onChange={(e) => onTeamChange(e.target.value)}>
-          {teams.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          {teams.map((teamOption) => (
+            <option key={teamOption} value={teamOption}>
+              {teamOption}
             </option>
           ))}
         </select>
       </div>
       <div className="slicer__group">
-        <span className="slicer__label">ラウンド</span>
+        <span className="slicer__label">{t('round')}</span>
         <div className="slicer__chips">
           {rounds.map((round) => (
             <button
@@ -69,7 +72,7 @@ export function KickFilters({
         </div>
       </div>
       <button type="button" className="slicer__reset" onClick={onToggleAllRounds} disabled={rounds.length === 0}>
-        {allRoundsSelected ? '全ラウンド解除' : '全ラウンド表示'}
+        {allRoundsSelected ? t('hideAllRounds') : t('showAllRounds')}
       </button>
     </div>
   )

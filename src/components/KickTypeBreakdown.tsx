@@ -1,5 +1,6 @@
 import type { KickEvent } from '../types/match'
 import { KICK_TYPE_ORDER, getKickTypeColor } from '../theme/kickColors'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface KickTypeBreakdownProps {
   kicks: KickEvent[]
@@ -13,6 +14,7 @@ interface KickTypeBreakdownProps {
  * 行をクリックするとその種別の選択状態がトグルされ、左のPitchChartの表示に連動する。
  */
 export function KickTypeBreakdown({ kicks, selectedTypes, onToggleType }: KickTypeBreakdownProps) {
+  const { t, lang } = useLanguage()
   const total = kicks.length
   const rows = KICK_TYPE_ORDER.map((kickType) => {
     const matched = kicks.filter((k) => k.kickType === kickType)
@@ -28,10 +30,10 @@ export function KickTypeBreakdown({ kicks, selectedTypes, onToggleType }: KickTy
         <table className="kick-type-table">
           <thead>
             <tr>
-              <th>キック種別</th>
-              <th className="is-right">本数</th>
-              <th className="is-right">割合</th>
-              <th className="is-right">平均距離</th>
+              <th>{t('colKickType')}</th>
+              <th className="is-right">{t('colKickCount')}</th>
+              <th className="is-right">{t('colKickShare')}</th>
+              <th className="is-right">{t('colAvgDistance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -58,7 +60,9 @@ export function KickTypeBreakdown({ kicks, selectedTypes, onToggleType }: KickTy
                   />
                   {r.kickType}
                 </td>
-                <td className="is-right is-tabular">{r.count.toLocaleString('ja-JP')}</td>
+                <td className="is-right is-tabular">
+                  {r.count.toLocaleString(lang === 'ja' ? 'ja-JP' : 'en-US')}
+                </td>
                 <td className="is-right is-tabular">{total ? `${((r.count / total) * 100).toFixed(1)}%` : '—'}</td>
                 <td className="is-right is-tabular">{Math.round(r.avgMetres)}m</td>
               </tr>
@@ -66,7 +70,7 @@ export function KickTypeBreakdown({ kicks, selectedTypes, onToggleType }: KickTy
             {rows.length === 0 && (
               <tr>
                 <td colSpan={4} className="data-table__empty">
-                  該当するキックがありません
+                  {t('noData')}
                 </td>
               </tr>
             )}

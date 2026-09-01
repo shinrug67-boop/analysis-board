@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { KickEvent } from '../types/match'
 import { uniqueValues, KICK_IN_PLAY_PHASES } from '../utils/aggregate'
 import { KICK_TYPE_ORDER } from '../theme/kickColors'
+import { useLanguage } from '../i18n/LanguageContext'
 import { KickFilters } from './KickFilters'
 import { PitchChart } from './charts/PitchChart'
 import { KickTypeBreakdown } from './KickTypeBreakdown'
@@ -16,6 +17,7 @@ function sortRounds(rounds: string[]): string[] {
  * ペナルティキックは対象外とし、Kick in Play / Kick in Play (Own 22) のみを扱う。
  */
 export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
+  const { t } = useLanguage()
   const inPlayKicks = useMemo(() => kicks.filter((k) => KICK_IN_PLAY_PHASES.has(k.phase)), [kicks])
 
   const allSeasons = useMemo(() => [...uniqueValues(inPlayKicks, (k) => k.season)].sort(), [inPlayKicks])
@@ -83,8 +85,11 @@ export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
       />
       <div className="card">
         <h2>
-          キッキングチャート（{team || '—'} / {selectedRounds.length}ラウンド分・表示中{pitchKicks.length}本、
-          Kick in Play系のみ）
+          {t('kickingChartHeading', {
+            team: team || '—',
+            rounds: selectedRounds.length,
+            count: pitchKicks.length,
+          })}
         </h2>
         <div className="kick-layout">
           <div className="kick-layout__pitch">

@@ -1,4 +1,5 @@
 import { useFilters } from '../state/FilterContext'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface SlicerProps {
   teams: string[]
@@ -11,12 +12,13 @@ interface SlicerProps {
  */
 export function Slicer({ teams, seasons }: SlicerProps) {
   const { filters, toggleTeam, toggleSeason, reset } = useFilters()
+  const { t } = useLanguage()
   const hasActiveFilter = filters.teams.length > 0 || filters.seasons.length > 0
 
   return (
-    <div className="slicer" role="group" aria-label="データの絞り込み">
+    <div className="slicer" role="group" aria-label={t('filterGroupLabel')}>
       <div className="slicer__group">
-        <span className="slicer__label">シーズン</span>
+        <span className="slicer__label">{t('season')}</span>
         <div className="slicer__chips">
           {seasons.map((season) => (
             <button
@@ -32,7 +34,7 @@ export function Slicer({ teams, seasons }: SlicerProps) {
         </div>
       </div>
       <div className="slicer__group">
-        <span className="slicer__label">チーム</span>
+        <span className="slicer__label">{t('team')}</span>
         <div className="slicer__chips">
           {teams.map((team) => (
             <button
@@ -48,7 +50,7 @@ export function Slicer({ teams, seasons }: SlicerProps) {
         </div>
       </div>
       <button type="button" className="slicer__reset" onClick={reset} disabled={!hasActiveFilter}>
-        フィルタをリセット
+        {t('resetFilters')}
       </button>
     </div>
   )

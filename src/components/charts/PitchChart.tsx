@@ -4,6 +4,7 @@ import type { EChartsOption } from './EChart'
 import type { LinesSeriesOption } from 'echarts/charts'
 import { palette, fontFamily } from '../../theme/palette'
 import { getKickTypeColor } from '../../theme/kickColors'
+import { useLanguage } from '../../i18n/LanguageContext'
 import type { KickEvent } from '../../types/match'
 
 interface PitchChartProps {
@@ -139,6 +140,8 @@ interface KickTooltipParams {
  * 矢印はキック種別（kickType）ごとに色分け（テーブルの色見本が凡例を兼ねる）。
  */
 export function PitchChart({ kicks }: PitchChartProps) {
+  const { t } = useLanguage()
+
   const option = useMemo<EChartsOption>(
     () => ({
       textStyle: { fontFamily, color: palette.textPrimary },
@@ -153,8 +156,8 @@ export function PitchChart({ kicks }: PitchChartProps) {
           return [
             `<strong>${kick.player}</strong>`,
             `${kick.kickType}（${kick.phase}）`,
-            `結果: ${kick.outcome}`,
-            `距離: ${Math.round(kick.metres)}m`,
+            `${t('tooltipOutcome')}: ${kick.outcome}`,
+            `${t('tooltipDistance')}: ${Math.round(kick.metres)}m`,
           ].join('<br/>')
         },
       },
@@ -208,7 +211,7 @@ export function PitchChart({ kicks }: PitchChartProps) {
         },
       ],
     }),
-    [kicks],
+    [kicks, t],
   )
 
   return <EChart option={option} aspectRatio={`${AXIS_X[1] - AXIS_X[0]}/${AXIS_Y[1] - AXIS_Y[0]}`} />

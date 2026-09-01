@@ -51,6 +51,13 @@ body {
   gap: 20px;
 }
 
+.dashboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .dashboard__header h1 {
   margin: 0;
   font-size: 22px;
@@ -61,6 +68,22 @@ body {
   margin: 4px 0 0;
   color: var(--text-secondary);
   font-size: 13px;
+}
+
+.lang-toggle {
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--baseline);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.lang-toggle:hover {
+  background: var(--gridline);
 }
 
 .card {

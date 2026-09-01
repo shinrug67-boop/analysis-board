@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { EChart } from './EChart'
 import type { EChartsOption } from './EChart'
 import { palette, fontFamily } from '../../theme/palette'
+import { useLanguage } from '../../i18n/LanguageContext'
+import type { TranslationKey } from '../../i18n/translations'
 
 interface PieChartProps {
-  data: { key: 'W' | 'L' | 'D'; label: string; count: number }[]
+  data: { key: 'W' | 'L' | 'D'; count: number }[]
 }
 
 const RESULT_COLOR: Record<'W' | 'L' | 'D', string> = {
@@ -13,17 +15,25 @@ const RESULT_COLOR: Record<'W' | 'L' | 'D', string> = {
   D: palette.status.neutral,
 }
 
+const RESULT_LABEL_KEY: Record<'W' | 'L' | 'D', TranslationKey> = {
+  W: 'resultWin',
+  L: 'resultLoss',
+  D: 'resultDraw',
+}
+
 /**
  * 勝敗内訳（勝ち/負け/引き分け）を示すドーナツグラフ。
  * これは名義カテゴリではなく状態（良い/悪い/中立）を表すため、categoricalではなくstatus色を使う。
  */
 export function PieChart({ data }: PieChartProps) {
+  const { t } = useLanguage()
+
   const option = useMemo<EChartsOption>(
     () => ({
       textStyle: { fontFamily, color: palette.textPrimary },
       tooltip: {
         trigger: 'item',
-        valueFormatter: (v) => `${v}試合`,
+        valueFormatter: (v) => t('tooltipMatchesCount', { n: Number(v) }),
       },
       legend: {
         bottom: 0,
@@ -49,14 +59,14 @@ export function PieChart({ data }: PieChartProps) {
           },
           labelLine: { lineStyle: { color: palette.baseline } },
           data: data.map((d) => ({
-            name: d.label,
+            name: t(RESULT_LABEL_KEY[d.key]),
             value: d.count,
             itemStyle: { color: RESULT_COLOR[d.key] },
           })),
         },
       ],
     }),
-    [data],
+    [data, t],
   )
 
   return <EChart option={option} height={360} />

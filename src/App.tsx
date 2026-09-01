@@ -14,6 +14,7 @@ import {
 } from './utils/aggregate'
 import { formatPercent, formatMetres } from './utils/format'
 import { getTeamColor } from './theme/teamColors'
+import { useLanguage } from './i18n/LanguageContext'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Slicer } from './components/Slicer'
 import { BarChart } from './components/charts/BarChart'
@@ -33,6 +34,7 @@ interface DashboardProps {
 
 function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
   const { filters } = useFilters()
+  const { t } = useLanguage()
 
   const allTeams = useMemo(() => [...uniqueValues(rows, (r) => r.team)].sort(), [rows])
   const allSeasons = useMemo(() => [...uniqueValues(rows, (r) => r.season)].sort(), [rows])
@@ -75,52 +77,52 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
 
       <section className="dashboard__charts">
         <div className="card">
-          <h2>チーム別 トライ数合計</h2>
-          <BarChart data={byTeam} unit="本" colorForKey={getTeamColor} />
+          <h2>{t('chartTriesByTeam')}</h2>
+          <BarChart data={byTeam} unit={t('unitTries')} colorForKey={getTeamColor} />
         </div>
         <div className="card">
-          <h2>日別 タックル成功率推移</h2>
+          <h2>{t('chartTackleTrend')}</h2>
           <LineChart data={byDate} />
         </div>
         <div className="card">
-          <h2>勝敗内訳</h2>
+          <h2>{t('chartResultBreakdown')}</h2>
           <PieChart data={byResult} />
         </div>
         <div className="card">
-          <h2>チーム別 平均キャリー獲得m（1試合あたり）</h2>
+          <h2>{t('chartCarryByTeam')}</h2>
           <BarChart data={carryByTeam} valueFormatter={formatMetres} colorForKey={getTeamColor} />
         </div>
         <div className="card">
-          <h2>チーム別 スクラム成功率</h2>
+          <h2>{t('chartScrumByTeam')}</h2>
           <BarChart data={scrumByTeam} valueFormatter={formatPercent} colorForKey={getTeamColor} />
         </div>
         <div className="card">
-          <h2>チーム別 ラインアウト成功率</h2>
+          <h2>{t('chartLineoutByTeam')}</h2>
           <BarChart data={lineoutByTeam} valueFormatter={formatPercent} colorForKey={getTeamColor} />
         </div>
       </section>
 
       <section className="dashboard__table">
         <div className="card">
-          <h2>試合成績明細</h2>
+          <h2>{t('sectionMatchDetails')}</h2>
           <DataTable rows={filteredRows} />
         </div>
       </section>
 
       <section className="dashboard__section">
-        <h2 className="dashboard__section-title">選手成績ランキング（期間合計）</h2>
+        <h2 className="dashboard__section-title">{t('sectionPlayerRanking')}</h2>
         <div className="card">
           <PlayerTable rows={leaderboard} />
         </div>
       </section>
 
       <section className="dashboard__section">
-        <h2 className="dashboard__section-title">キッキングチャート</h2>
+        <h2 className="dashboard__section-title">{t('sectionKickingChart')}</h2>
         <KickAnalysisSection kicks={kicks} />
       </section>
 
       <section className="dashboard__section">
-        <h2 className="dashboard__section-title">勝敗差分析（勝ち試合 vs 負け試合）</h2>
+        <h2 className="dashboard__section-title">{t('sectionWinLoss')}</h2>
         <WinLossSection rows={rows} kicks={kicks} />
       </section>
     </DashboardLayout>
@@ -128,6 +130,7 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
 }
 
 function App() {
+  const { t } = useLanguage()
   const match = useMatchData()
   const player = usePlayerMatchData()
   const kick = useKickEvents()
@@ -136,10 +139,14 @@ function App() {
   const error = match.error ?? player.error ?? kick.error
 
   if (loading) {
-    return <div className="status-screen">読み込み中…</div>
+    return <div className="status-screen">{t('loading')}</div>
   }
   if (error) {
-    return <div className="status-screen status-screen--error">データの読み込みに失敗しました: {error}</div>
+    return (
+      <div className="status-screen status-screen--error">
+        {t('loadError')}: {error}
+      </div>
+    )
   }
 
   return (

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { MatchTeamRow, KickEvent } from '../types/match'
 import { winLossComparison, attachDerivedMetrics, uniqueValues } from '../utils/aggregate'
+import { useLanguage } from '../i18n/LanguageContext'
 import { WinLossChart } from './charts/WinLossChart'
 import { WinLossTable } from './WinLossTable'
 
@@ -10,6 +11,7 @@ import { WinLossTable } from './WinLossTable'
  * （キッキングチャートと同じ考え方。「すべて」を選べば全データで見られる）。
  */
 export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: KickEvent[] }) {
+  const { t } = useLanguage()
   const extendedRows = useMemo(() => attachDerivedMetrics(rows, kicks), [rows, kicks])
 
   const allSeasons = useMemo(() => [...uniqueValues(rows, (r) => r.season)].sort(), [rows])
@@ -30,9 +32,9 @@ export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: K
 
   return (
     <>
-      <div className="slicer" role="group" aria-label="勝敗差分析の絞り込み">
+      <div className="slicer" role="group" aria-label={t('sectionWinLoss')}>
         <div className="slicer__group">
-          <span className="slicer__label">シーズン</span>
+          <span className="slicer__label">{t('season')}</span>
           <select
             className="select"
             value={season}
@@ -41,7 +43,7 @@ export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: K
               setTeam('')
             }}
           >
-            <option value="">すべて</option>
+            <option value="">{t('all')}</option>
             {allSeasons.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -50,23 +52,23 @@ export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: K
           </select>
         </div>
         <div className="slicer__group">
-          <span className="slicer__label">チーム</span>
+          <span className="slicer__label">{t('team')}</span>
           <select className="select" value={team} onChange={(e) => setTeam(e.target.value)}>
-            <option value="">すべて</option>
-            {teamsForSeason.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            <option value="">{t('all')}</option>
+            {teamsForSeason.map((teamOption) => (
+              <option key={teamOption} value={teamOption}>
+                {teamOption}
               </option>
             ))}
           </select>
         </div>
       </div>
       <div className="card">
-        <h2>効果量（Cohen&apos;s d）順 — 勝敗を最も分けている指標</h2>
+        <h2>{t('winLossChartTitle')}</h2>
         <WinLossChart data={winLossRows} />
       </div>
       <div className="card">
-        <h2>指標別 詳細</h2>
+        <h2>{t('winLossTableTitle')}</h2>
         <WinLossTable rows={winLossRows} />
       </div>
     </>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 export interface Column<T> {
   key: string
@@ -32,6 +33,7 @@ function compareValues(a: string | number | boolean | null, b: string | number |
  * 行の型に依存しないよう columns/rows/rowKey を props 化している。
  */
 export function Table<T>({ columns, rows, rowKey, defaultSortKey, defaultSortDir = 'desc', pageSize = 20 }: TableProps<T>) {
+  const { t, lang } = useLanguage()
   const [sortKey, setSortKey] = useState(defaultSortKey)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(defaultSortDir)
   const [page, setPage] = useState(1)
@@ -100,7 +102,7 @@ export function Table<T>({ columns, rows, rowKey, defaultSortKey, defaultSortDir
             {pageRows.length === 0 && (
               <tr>
                 <td colSpan={columns.length} className="data-table__empty">
-                  該当するデータがありません
+                  {t('noData')}
                 </td>
               </tr>
             )}
@@ -109,18 +111,21 @@ export function Table<T>({ columns, rows, rowKey, defaultSortKey, defaultSortDir
       </div>
       <div className="data-table__footer">
         <span>
-          {sorted.length.toLocaleString('ja-JP')} 件中 {pageRows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}
-          –{(currentPage - 1) * pageSize + pageRows.length} 件を表示
+          {t('paginationSummary', {
+            total: sorted.length.toLocaleString(lang === 'ja' ? 'ja-JP' : 'en-US'),
+            from: pageRows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1,
+            to: (currentPage - 1) * pageSize + pageRows.length,
+          })}
         </span>
         <div className="data-table__pager">
           <button type="button" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>
-            前へ
+            {t('prevPage')}
           </button>
           <span>
             {currentPage} / {pageCount}
           </span>
           <button type="button" disabled={currentPage >= pageCount} onClick={() => setPage((p) => p + 1)}>
-            次へ
+            {t('nextPage')}
           </button>
         </div>
       </div>

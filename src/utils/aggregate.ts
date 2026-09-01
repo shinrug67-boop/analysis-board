@@ -85,21 +85,23 @@ export function avgTackleSuccessByDate(rows: MatchTeamRow[]) {
     .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
 }
 
-/** 勝敗内訳（ドーナツグラフ用）。表示順を W → L → D に固定する。 */
+/**
+ * 勝敗内訳（ドーナツグラフ用）。表示順を W → L → D に固定する。
+ * 表示名は持たない。keyを使って呼び出し側（i18n）で翻訳する。
+ */
 export function resultBreakdown(rows: MatchTeamRow[]) {
   const counts = { W: 0, L: 0, D: 0 }
   for (const row of rows) counts[row.result] += 1
   return [
-    { key: 'W' as const, label: '勝ち', count: counts.W },
-    { key: 'L' as const, label: '負け', count: counts.L },
-    { key: 'D' as const, label: '引き分け', count: counts.D },
+    { key: 'W' as const, count: counts.W },
+    { key: 'L' as const, count: counts.L },
+    { key: 'D' as const, count: counts.D },
   ].filter((r) => r.count > 0)
 }
 
-/** 勝敗差分析（1行=1指標）の結果。 */
+/** 勝敗差分析（1行=1指標）の結果。表示名はkeyを使って呼び出し側（i18n）で翻訳する。 */
 export interface WinLossRow {
   key: string
-  label: string
   format: (value: number) => string
   winAvg: number
   lossAvg: number
@@ -157,81 +159,71 @@ export function attachDerivedMetrics(rows: MatchTeamRow[], kicks: KickEvent[]): 
 
 interface WinLossMetricDef {
   key: string
-  label: string
   higherIsBetter: boolean
   getValue: (row: ExtendedMatchRow) => number | null
   format: (value: number) => string
 }
 
+// labelは持たない。key（=i18nの`metric_${key}`）を使って表示側（WinLossChart/WinLossTable）で翻訳する。
 const WIN_LOSS_METRICS: WinLossMetricDef[] = [
-  { key: 'tries', label: 'トライ数', higherIsBetter: true, getValue: (r) => r.tries, format: (v) => `${v.toFixed(1)}本` },
+  { key: 'tries', higherIsBetter: true, getValue: (r) => r.tries, format: (v) => `${v.toFixed(1)}` },
   {
     key: 'tackleSuccessRate',
-    label: 'タックル成功率',
     higherIsBetter: true,
     getValue: (r) => r.tackleSuccessRate,
     format: formatPercent,
   },
-  { key: 'carryMetres', label: 'キャリー獲得m', higherIsBetter: true, getValue: (r) => r.carryMetres, format: formatMetres },
+  { key: 'carryMetres', higherIsBetter: true, getValue: (r) => r.carryMetres, format: formatMetres },
   {
     key: 'scrumSuccessRate',
-    label: 'スクラム成功率',
     higherIsBetter: true,
     getValue: (r) => r.scrumSuccessRate,
     format: formatPercent,
   },
   {
     key: 'lineoutSuccessRate',
-    label: 'ラインアウト成功率',
     higherIsBetter: true,
     getValue: (r) => r.lineoutSuccessRate,
     format: formatPercent,
   },
   {
     key: 'turnoversWon',
-    label: 'ターンオーバー獲得',
     higherIsBetter: true,
     getValue: (r) => r.turnoversWon,
-    format: (v) => `${v.toFixed(1)}本`,
+    format: (v) => `${v.toFixed(1)}`,
   },
   {
     key: 'turnoversConceded',
-    label: 'ターンオーバー献上',
     higherIsBetter: false,
     getValue: (r) => r.turnoversConceded,
-    format: (v) => `${v.toFixed(1)}本`,
+    format: (v) => `${v.toFixed(1)}`,
   },
   {
     key: 'penaltiesConceded',
-    label: 'ペナルティ',
     higherIsBetter: false,
     getValue: (r) => r.penaltiesConceded,
-    format: (v) => `${v.toFixed(1)}本`,
+    format: (v) => `${v.toFixed(1)}`,
   },
   {
     key: 'cards',
-    label: 'カード数（黄+赤）',
     higherIsBetter: false,
     getValue: (r) => r.yellowCards + r.redCards,
-    format: (v) => `${v.toFixed(2)}枚`,
+    format: (v) => `${v.toFixed(2)}`,
   },
   {
     key: 'penaltiesWon',
-    label: 'ペナルティ獲得',
     higherIsBetter: true,
     getValue: (r) => r.penaltiesWon,
-    format: (v) => `${v.toFixed(1)}本`,
+    format: (v) => `${v.toFixed(1)}`,
   },
   {
     key: 'metresPerCarry',
-    label: 'キャリー1回あたり獲得m',
     higherIsBetter: true,
     getValue: (r) => r.metresPerCarry,
     format: (v) => `${v.toFixed(1)}m`,
   },
   {
     key: 'kickErrorRate',
-    label: 'キックのミス率',
     higherIsBetter: false,
     getValue: (r) => r.kickErrorRate,
     format: formatPercent,
@@ -271,7 +263,6 @@ export function winLossComparison(rows: ExtendedMatchRow[]): WinLossRow[] {
 
     return {
       key: metric.key,
-      label: metric.label,
       format: metric.format,
       winAvg: w.mean,
       lossAvg: l.mean,
