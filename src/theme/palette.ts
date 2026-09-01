@@ -33,9 +33,12 @@ export const palette = {
   // 通常のチャート配色ルールとは別枠で扱う。
   // 濃いめの緑にすることで、白色のTouch Kick矢印など明るい色を視認しやすくしている。
   // grass/inGoalはグラデーション表現のためLight/Darkの2値を持つ。
+  // grassStripe*はモウィング（芝刈り）ストライプ用に2系統の縞色を持つ。
   pitch: {
-    grassLight: '#5da366',
-    grassDark: '#417c48',
+    grassStripeLightTop: '#66ad6f',
+    grassStripeLightBottom: '#4b9153',
+    grassStripeDarkTop: '#5a9c62',
+    grassStripeDarkBottom: '#428448',
     inGoalLight: '#4c8a53',
     inGoalDark: '#33693a',
     border: '#2c5a32',

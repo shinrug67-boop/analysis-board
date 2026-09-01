@@ -13,6 +13,7 @@ import {
   DatasetComponent,
   MarkLineComponent,
   MarkAreaComponent,
+  MarkPointComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { ComposeOption } from 'echarts/core'
@@ -24,6 +25,7 @@ import type {
   DatasetComponentOption,
   MarkLineComponentOption,
   MarkAreaComponentOption,
+  MarkPointComponentOption,
 } from 'echarts/components'
 
 echarts.use([
@@ -37,6 +39,7 @@ echarts.use([
   DatasetComponent,
   MarkLineComponent,
   MarkAreaComponent,
+  MarkPointComponent,
   CanvasRenderer,
 ])
 
@@ -51,6 +54,7 @@ export type EChartsOption = ComposeOption<
   | DatasetComponentOption
   | MarkLineComponentOption
   | MarkAreaComponentOption
+  | MarkPointComponentOption
 >
 
 interface EChartProps {
