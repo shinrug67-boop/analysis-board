@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { KickEvent } from '../types/match'
 import { uniqueValues } from '../utils/aggregate'
+import { KICK_TYPE_ORDER } from '../theme/kickColors'
 import { KickFilters } from './KickFilters'
 import { PitchChart } from './charts/PitchChart'
 import { KickTypeBreakdown } from './KickTypeBreakdown'
@@ -44,6 +45,14 @@ export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
     [inPlayKicks, season, team, selectedRounds],
   )
 
+  const [selectedTypesOverride, setSelectedTypesOverride] = useState<string[] | null>(null)
+  const selectedTypes = selectedTypesOverride ?? KICK_TYPE_ORDER
+
+  const pitchKicks = useMemo(
+    () => filteredKicks.filter((k) => selectedTypes.includes(k.kickType)),
+    [filteredKicks, selectedTypes],
+  )
+
   return (
     <>
       <KickFilters
@@ -76,15 +85,24 @@ export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
       />
       <div className="card">
         <h2>
-          キッキングチャート（{team || '—'} / {selectedRounds.length}ラウンド分・{filteredKicks.length}本、
+          キッキングチャート（{team || '—'} / {selectedRounds.length}ラウンド分・表示中{pitchKicks.length}本、
           Kick in Play系のみ）
         </h2>
         <div className="kick-layout">
           <div className="kick-layout__pitch">
-            <PitchChart kicks={filteredKicks} />
+            <PitchChart kicks={pitchKicks} />
           </div>
           <div className="kick-layout__table">
-            <KickTypeBreakdown kicks={filteredKicks} />
+            <KickTypeBreakdown
+              kicks={filteredKicks}
+              selectedTypes={selectedTypes}
+              onToggleType={(kickType) => {
+                const base = selectedTypesOverride ?? KICK_TYPE_ORDER
+                setSelectedTypesOverride(
+                  base.includes(kickType) ? base.filter((t) => t !== kickType) : [...base, kickType],
+                )
+              }}
+            />
           </div>
         </div>
       </div>

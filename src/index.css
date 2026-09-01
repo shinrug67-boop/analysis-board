@@ -122,6 +122,20 @@ body {
   vertical-align: middle;
 }
 
+.kick-type-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.kick-type-table tbody tr:hover {
+  background: var(--gridline);
+}
+
+.kick-type-table tbody tr.is-active {
+  background: rgba(42, 120, 214, 0.12);
+  font-weight: 600;
+}
+
 .select {
   font-family: var(--font-sans);
   font-size: 13px;
