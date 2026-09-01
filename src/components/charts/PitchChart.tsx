@@ -106,15 +106,17 @@ const GRASS_STRIPE_LIGHT = verticalGradient(palette.pitch.grassStripeLightTop, p
 const GRASS_STRIPE_DARK = verticalGradient(palette.pitch.grassStripeDarkTop, palette.pitch.grassStripeDarkBottom)
 const IN_GOAL_FILL = verticalGradient(palette.pitch.inGoalLight, palette.pitch.inGoalDark)
 
-// モウィング（芝刈り）ストライプ。タッチライン方向に等間隔で明暗を交互に敷き詰める。
+// モウィング（芝刈り）ストライプ。見た目の余白部分も含めキャンバス全体を緑で埋める
+// （タッチライン際の"22"ラベルや、タッチを割ったキックの矢印の先が余白に落ちても
+// 見えなくならないようにするため）。実際のフィールド境界はライン（枠線）の方で示す。
 const STRIPE_COUNT = 9
-const STRIPE_WIDTH = FIELD_X[1] / STRIPE_COUNT
+const STRIPE_WIDTH = (AXIS_X[1] - AXIS_X[0]) / STRIPE_COUNT
 const GRASS_STRIPES = Array.from({ length: STRIPE_COUNT }, (_, i) => [
   {
-    coord: [i * STRIPE_WIDTH, DEAD_Y[0]] as Point,
+    coord: [AXIS_X[0] + i * STRIPE_WIDTH, AXIS_Y[0]] as Point,
     itemStyle: { color: i % 2 === 0 ? GRASS_STRIPE_LIGHT : GRASS_STRIPE_DARK },
   },
-  { coord: [(i + 1) * STRIPE_WIDTH, DEAD_Y[1]] as Point },
+  { coord: [AXIS_X[0] + (i + 1) * STRIPE_WIDTH, AXIS_Y[1]] as Point },
 ])
 
 // インゴールを少し濃い緑で塗り分ける（ストライプの上から重ねる）。
