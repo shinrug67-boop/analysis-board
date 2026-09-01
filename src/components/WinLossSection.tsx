@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import type { MatchTeamRow } from '../types/match'
-import { winLossComparison, uniqueValues } from '../utils/aggregate'
+import type { MatchTeamRow, KickEvent } from '../types/match'
+import { winLossComparison, attachDerivedMetrics, uniqueValues } from '../utils/aggregate'
 import { WinLossChart } from './charts/WinLossChart'
 import { WinLossTable } from './WinLossTable'
 
@@ -9,7 +9,9 @@ import { WinLossTable } from './WinLossTable'
  * グローバルのチーム/シーズンSlicerとは独立して、この中で完結した状態を持つ
  * （キッキングチャートと同じ考え方。「すべて」を選べば全データで見られる）。
  */
-export function WinLossSection({ rows }: { rows: MatchTeamRow[] }) {
+export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: KickEvent[] }) {
+  const extendedRows = useMemo(() => attachDerivedMetrics(rows, kicks), [rows, kicks])
+
   const allSeasons = useMemo(() => [...uniqueValues(rows, (r) => r.season)].sort(), [rows])
   const [season, setSeason] = useState('')
 
@@ -20,8 +22,9 @@ export function WinLossSection({ rows }: { rows: MatchTeamRow[] }) {
   const [team, setTeam] = useState('')
 
   const filteredRows = useMemo(
-    () => rows.filter((r) => (season === '' || r.season === season) && (team === '' || r.team === team)),
-    [rows, season, team],
+    () =>
+      extendedRows.filter((r) => (season === '' || r.season === season) && (team === '' || r.team === team)),
+    [extendedRows, season, team],
   )
   const winLossRows = useMemo(() => winLossComparison(filteredRows), [filteredRows])
 

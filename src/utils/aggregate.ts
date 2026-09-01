@@ -1,5 +1,8 @@
-import type { MatchTeamRow, PlayerMatchRow } from '../types/match'
+import type { MatchTeamRow, PlayerMatchRow, KickEvent } from '../types/match'
 import { formatPercent, formatMetres } from './format'
+
+/** ペナルティキックを除いた「インプレーのキック」のphase。キッキングチャート・勝敗差分析で共通利用する。 */
+export const KICK_IN_PLAY_PHASES = new Set(['Kick in Play', 'Kick in Play (Own 22)'])
 
 /** チーム別のトライ数合計（棒グラフ用）。トライ数が多い順に並べる。 */
 export function sumTriesByTeam(rows: MatchTeamRow[]) {
@@ -108,11 +111,55 @@ export interface WinLossRow {
   nLoss: number
 }
 
+/**
+ * 試合×チームの行に、他ファイル（キックイベント）や同一試合の相手チーム行から導出した
+ * 指標を合体させたもの。勝敗差分析はこちらを入力に取る。
+ */
+export interface ExtendedMatchRow extends MatchTeamRow {
+  /** 相手チームの同一試合penaltiesConceded＝このチームが獲得したペナルティ数。 */
+  penaltiesWon: number
+  /** キャリー1回あたりの平均獲得メートル（carryMetres/carries）。carries=0ならnull。 */
+  metresPerCarry: number | null
+  /** インプレーキック（ペナルティキック除く）に占めるエラー系結果の割合。キックが0本ならnull。 */
+  kickErrorRate: number | null
+}
+
+/**
+ * MatchTeamRowにキックイベント由来・相手チーム由来の指標を合体させる。
+ * 勝敗差分析でチーム集計CSVだけでは出せない指標（キックのミス率など）も扱えるようにするため。
+ */
+export function attachDerivedMetrics(rows: MatchTeamRow[], kicks: KickEvent[]): ExtendedMatchRow[] {
+  const concededByMatch = new Map<string, Map<string, number>>()
+  for (const row of rows) {
+    if (!concededByMatch.has(row.matchId)) concededByMatch.set(row.matchId, new Map())
+    concededByMatch.get(row.matchId)!.set(row.team, row.penaltiesConceded)
+  }
+
+  const kicksByMatchTeam = new Map<string, KickEvent[]>()
+  for (const kick of kicks) {
+    if (!KICK_IN_PLAY_PHASES.has(kick.phase)) continue
+    const key = `${kick.matchId}__${kick.team}`
+    if (!kicksByMatchTeam.has(key)) kicksByMatchTeam.set(key, [])
+    kicksByMatchTeam.get(key)!.push(kick)
+  }
+
+  return rows.map((row) => {
+    const penaltiesWon = concededByMatch.get(row.matchId)?.get(row.opponent) ?? 0
+    const metresPerCarry = row.carries ? row.carryMetres / row.carries : null
+
+    const teamKicks = kicksByMatchTeam.get(`${row.matchId}__${row.team}`) ?? []
+    const errorKicks = teamKicks.filter((k) => k.outcome.startsWith('Error')).length
+    const kickErrorRate = teamKicks.length ? errorKicks / teamKicks.length : null
+
+    return { ...row, penaltiesWon, metresPerCarry, kickErrorRate }
+  })
+}
+
 interface WinLossMetricDef {
   key: string
   label: string
   higherIsBetter: boolean
-  getValue: (row: MatchTeamRow) => number | null
+  getValue: (row: ExtendedMatchRow) => number | null
   format: (value: number) => string
 }
 
@@ -168,6 +215,27 @@ const WIN_LOSS_METRICS: WinLossMetricDef[] = [
     getValue: (r) => r.yellowCards + r.redCards,
     format: (v) => `${v.toFixed(2)}枚`,
   },
+  {
+    key: 'penaltiesWon',
+    label: 'ペナルティ獲得',
+    higherIsBetter: true,
+    getValue: (r) => r.penaltiesWon,
+    format: (v) => `${v.toFixed(1)}本`,
+  },
+  {
+    key: 'metresPerCarry',
+    label: 'キャリー1回あたり獲得m',
+    higherIsBetter: true,
+    getValue: (r) => r.metresPerCarry,
+    format: (v) => `${v.toFixed(1)}m`,
+  },
+  {
+    key: 'kickErrorRate',
+    label: 'キックのミス率',
+    higherIsBetter: false,
+    getValue: (r) => r.kickErrorRate,
+    format: formatPercent,
+  },
 ]
 
 function meanAndVariance(values: number[]) {
@@ -183,7 +251,7 @@ function meanAndVariance(values: number[]) {
  * 単位が指標ごとに異なる（本/m/%）ため、標準偏差で正規化した効果量（Cohen's d）の絶対値が
  * 大きい順に並べる＝「勝敗を最も分ける指標」が上に来る。引き分けは対象外。
  */
-export function winLossComparison(rows: MatchTeamRow[]): WinLossRow[] {
+export function winLossComparison(rows: ExtendedMatchRow[]): WinLossRow[] {
   const winRows = rows.filter((r) => r.result === 'W')
   const lossRows = rows.filter((r) => r.result === 'L')
 

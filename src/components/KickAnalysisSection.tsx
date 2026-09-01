@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react'
 import type { KickEvent } from '../types/match'
-import { uniqueValues } from '../utils/aggregate'
+import { uniqueValues, KICK_IN_PLAY_PHASES } from '../utils/aggregate'
 import { KICK_TYPE_ORDER } from '../theme/kickColors'
 import { KickFilters } from './KickFilters'
 import { PitchChart } from './charts/PitchChart'
 import { KickTypeBreakdown } from './KickTypeBreakdown'
-
-const INCLUDED_PHASES = new Set(['Kick in Play', 'Kick in Play (Own 22)'])
 
 function sortRounds(rounds: string[]): string[] {
   return [...rounds].sort((a, b) => Number(a) - Number(b))
@@ -18,7 +16,7 @@ function sortRounds(rounds: string[]): string[] {
  * ペナルティキックは対象外とし、Kick in Play / Kick in Play (Own 22) のみを扱う。
  */
 export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
-  const inPlayKicks = useMemo(() => kicks.filter((k) => INCLUDED_PHASES.has(k.phase)), [kicks])
+  const inPlayKicks = useMemo(() => kicks.filter((k) => KICK_IN_PLAY_PHASES.has(k.phase)), [kicks])
 
   const allSeasons = useMemo(() => [...uniqueValues(inPlayKicks, (k) => k.season)].sort(), [inPlayKicks])
   const [seasonOverride, setSeasonOverride] = useState('')

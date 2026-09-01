@@ -121,7 +121,7 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
 
       <section className="dashboard__section">
         <h2 className="dashboard__section-title">勝敗差分析（勝ち試合 vs 負け試合）</h2>
-        <WinLossSection rows={rows} />
+        <WinLossSection rows={rows} kicks={kicks} />
       </section>
     </DashboardLayout>
   )
