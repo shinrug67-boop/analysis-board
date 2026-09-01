@@ -1,4 +1,5 @@
 import type { MatchTeamRow, PlayerMatchRow } from '../types/match'
+import { formatPercent, formatMetres } from './format'
 
 /** チーム別のトライ数合計（棒グラフ用）。トライ数が多い順に並べる。 */
 export function sumTriesByTeam(rows: MatchTeamRow[]) {
@@ -90,6 +91,128 @@ export function resultBreakdown(rows: MatchTeamRow[]) {
     { key: 'L' as const, label: '負け', count: counts.L },
     { key: 'D' as const, label: '引き分け', count: counts.D },
   ].filter((r) => r.count > 0)
+}
+
+/** 勝敗差分析（1行=1指標）の結果。 */
+export interface WinLossRow {
+  key: string
+  label: string
+  format: (value: number) => string
+  winAvg: number
+  lossAvg: number
+  /** 勝ちに有利な方向を正にそろえた差（元の単位）。higherIsBetter=falseの指標は符号を反転済み。 */
+  advantage: number
+  /** 効果量（Cohen's d）。advantageと同じ向きに符号をそろえている。単位に依存せず指標間で比較できる。 */
+  cohensD: number
+  nWin: number
+  nLoss: number
+}
+
+interface WinLossMetricDef {
+  key: string
+  label: string
+  higherIsBetter: boolean
+  getValue: (row: MatchTeamRow) => number | null
+  format: (value: number) => string
+}
+
+const WIN_LOSS_METRICS: WinLossMetricDef[] = [
+  { key: 'tries', label: 'トライ数', higherIsBetter: true, getValue: (r) => r.tries, format: (v) => `${v.toFixed(1)}本` },
+  {
+    key: 'tackleSuccessRate',
+    label: 'タックル成功率',
+    higherIsBetter: true,
+    getValue: (r) => r.tackleSuccessRate,
+    format: formatPercent,
+  },
+  { key: 'carryMetres', label: 'キャリー獲得m', higherIsBetter: true, getValue: (r) => r.carryMetres, format: formatMetres },
+  {
+    key: 'scrumSuccessRate',
+    label: 'スクラム成功率',
+    higherIsBetter: true,
+    getValue: (r) => r.scrumSuccessRate,
+    format: formatPercent,
+  },
+  {
+    key: 'lineoutSuccessRate',
+    label: 'ラインアウト成功率',
+    higherIsBetter: true,
+    getValue: (r) => r.lineoutSuccessRate,
+    format: formatPercent,
+  },
+  {
+    key: 'turnoversWon',
+    label: 'ターンオーバー獲得',
+    higherIsBetter: true,
+    getValue: (r) => r.turnoversWon,
+    format: (v) => `${v.toFixed(1)}本`,
+  },
+  {
+    key: 'turnoversConceded',
+    label: 'ターンオーバー献上',
+    higherIsBetter: false,
+    getValue: (r) => r.turnoversConceded,
+    format: (v) => `${v.toFixed(1)}本`,
+  },
+  {
+    key: 'penaltiesConceded',
+    label: 'ペナルティ',
+    higherIsBetter: false,
+    getValue: (r) => r.penaltiesConceded,
+    format: (v) => `${v.toFixed(1)}本`,
+  },
+  {
+    key: 'cards',
+    label: 'カード数（黄+赤）',
+    higherIsBetter: false,
+    getValue: (r) => r.yellowCards + r.redCards,
+    format: (v) => `${v.toFixed(2)}枚`,
+  },
+]
+
+function meanAndVariance(values: number[]) {
+  const n = values.length
+  if (n === 0) return { mean: 0, variance: 0, n: 0 }
+  const mean = values.reduce((a, b) => a + b, 0) / n
+  const variance = n > 1 ? values.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1) : 0
+  return { mean, variance, n }
+}
+
+/**
+ * 勝ち試合と負け試合で各指標の平均がどれだけ違うかを比較する。
+ * 単位が指標ごとに異なる（本/m/%）ため、標準偏差で正規化した効果量（Cohen's d）の絶対値が
+ * 大きい順に並べる＝「勝敗を最も分ける指標」が上に来る。引き分けは対象外。
+ */
+export function winLossComparison(rows: MatchTeamRow[]): WinLossRow[] {
+  const winRows = rows.filter((r) => r.result === 'W')
+  const lossRows = rows.filter((r) => r.result === 'L')
+
+  return WIN_LOSS_METRICS.map((metric) => {
+    const winValues = winRows.map(metric.getValue).filter((v): v is number => v !== null)
+    const lossValues = lossRows.map(metric.getValue).filter((v): v is number => v !== null)
+    const w = meanAndVariance(winValues)
+    const l = meanAndVariance(lossValues)
+
+    const rawDiff = w.mean - l.mean
+    const advantage = metric.higherIsBetter ? rawDiff : -rawDiff
+
+    const pooledDf = w.n + l.n - 2
+    const pooledVariance = pooledDf > 0 ? ((w.n - 1) * w.variance + (l.n - 1) * l.variance) / pooledDf : 0
+    const pooledSd = Math.sqrt(pooledVariance)
+    const cohensD = pooledSd > 0 ? advantage / pooledSd : 0
+
+    return {
+      key: metric.key,
+      label: metric.label,
+      format: metric.format,
+      winAvg: w.mean,
+      lossAvg: l.mean,
+      advantage,
+      cohensD,
+      nWin: w.n,
+      nLoss: l.n,
+    }
+  }).sort((a, b) => Math.abs(b.cohensD) - Math.abs(a.cohensD))
 }
 
 /** 選手別ランキング（期間合計）の1行分。 */

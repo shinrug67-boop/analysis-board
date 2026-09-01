@@ -10,6 +10,7 @@ import {
   avgTackleSuccessByDate,
   resultBreakdown,
   playerLeaderboard,
+  winLossComparison,
   uniqueValues,
 } from './utils/aggregate'
 import { formatPercent, formatMetres } from './utils/format'
@@ -19,8 +20,10 @@ import { Slicer } from './components/Slicer'
 import { BarChart } from './components/charts/BarChart'
 import { LineChart } from './components/charts/LineChart'
 import { PieChart } from './components/charts/PieChart'
+import { WinLossChart } from './components/charts/WinLossChart'
 import { DataTable } from './components/DataTable'
 import { PlayerTable } from './components/PlayerTable'
+import { WinLossTable } from './components/WinLossTable'
 import { KickAnalysisSection } from './components/KickAnalysisSection'
 import type { MatchTeamRow, PlayerMatchRow, KickEvent } from './types/match'
 
@@ -65,6 +68,7 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
     [filteredRows],
   )
   const leaderboard = useMemo(() => playerLeaderboard(filteredPlayerRows), [filteredPlayerRows])
+  const winLossRows = useMemo(() => winLossComparison(filteredRows), [filteredRows])
 
   return (
     <DashboardLayout>
@@ -116,6 +120,18 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
       <section className="dashboard__section">
         <h2 className="dashboard__section-title">キッキングチャート</h2>
         <KickAnalysisSection kicks={kicks} />
+      </section>
+
+      <section className="dashboard__section">
+        <h2 className="dashboard__section-title">勝敗差分析（勝ち試合 vs 負け試合）</h2>
+        <div className="card">
+          <h2>効果量（Cohen&apos;s d）順 — 勝敗を最も分けている指標</h2>
+          <WinLossChart data={winLossRows} />
+        </div>
+        <div className="card">
+          <h2>指標別 詳細</h2>
+          <WinLossTable rows={winLossRows} />
+        </div>
       </section>
     </DashboardLayout>
   )
