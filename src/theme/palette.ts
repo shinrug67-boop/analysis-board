@@ -33,6 +33,7 @@ export const palette = {
   // 通常のチャート配色ルールとは別枠で扱う。
   pitch: {
     grass: '#e6f2e1',
+    inGoal: '#d2e6cb',
     border: '#c3ddb8',
     line: '#ffffff',
   },
