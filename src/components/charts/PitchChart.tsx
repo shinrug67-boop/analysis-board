@@ -10,17 +10,21 @@ interface PitchChartProps {
   kicks: KickEvent[]
 }
 
-// ピッチの横線（自陣ゴールライン=0 → 敵陣ゴールライン=100、単位はメートル相当）。
-// 縦向き表示のため、pitch長手方向はyAxis側の水平線として描く。
-// 22m/ハーフウェーはやや太く、5m/15mラインは細く描く。
+// ピッチのライン。World Rugby規定の配置:
+// - 22m/ハーフウェー: ゴールラインと平行にピッチを横切る実線（縦向き表示ではyAxis方向）
+// - 10mライン: ハーフウェーの前後10mをピッチを横切る破線（yAxis方向）
+// - 5m/15mライン: タッチラインと"平行"にピッチの長さ方向へ伸びる破線（縦向き表示ではxAxis方向）
+//   ※ゴールラインからの距離ではないので注意。
 const PITCH_LINES = [
-  { yAxis: 5, lineStyle: { width: 0.75 } },
-  { yAxis: 15, lineStyle: { width: 0.75 } },
   { yAxis: 22, lineStyle: { width: 1.5 } },
   { yAxis: 50, lineStyle: { width: 1.5 } },
   { yAxis: 78, lineStyle: { width: 1.5 } },
-  { yAxis: 85, lineStyle: { width: 0.75 } },
-  { yAxis: 95, lineStyle: { width: 0.75 } },
+  { yAxis: 40, lineStyle: { width: 0.75, type: 'dashed' as const } },
+  { yAxis: 60, lineStyle: { width: 0.75, type: 'dashed' as const } },
+  { xAxis: 5, lineStyle: { width: 0.75, type: 'dashed' as const } },
+  { xAxis: 15, lineStyle: { width: 0.75, type: 'dashed' as const } },
+  { xAxis: 53, lineStyle: { width: 0.75, type: 'dashed' as const } },
+  { xAxis: 63, lineStyle: { width: 0.75, type: 'dashed' as const } },
 ]
 
 interface KickTooltipParams {
