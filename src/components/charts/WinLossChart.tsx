@@ -19,9 +19,12 @@ interface TooltipParams {
  * 勝ち試合・負け試合で各指標がどれだけ違うかを、効果量（Cohen's d）順の横棒で示すチャート。
  * 正（緑）＝勝ちに有利な方向、負（赤）＝直感に反して負け試合の方が高い、という向きに色分けする。
  * カテゴリ数が多い・ラベルが長いため横棒を採用し、上ほど「勝敗を分ける度合いが大きい」指標。
+ * 勝ち/負けどちらかが0件で比較不能な指標（cohensD=null）はチャートには出さない
+ * （詳細テーブル側には「—」として残る）。
  */
 export function WinLossChart({ data }: WinLossChartProps) {
   const { t } = useLanguage()
+  const comparableData = useMemo(() => data.filter((d) => d.cohensD !== null), [data])
 
   const option = useMemo<EChartsOption>(
     () => {
@@ -34,8 +37,8 @@ export function WinLossChart({ data }: WinLossChartProps) {
         axisPointer: { type: 'shadow' },
         formatter: (params) => {
           const p = (Array.isArray(params) ? params[0] : params) as TooltipParams
-          const row = data[p.dataIndex]
-          if (!row) return ''
+          const row = comparableData[p.dataIndex]
+          if (!row || row.winAvg === null || row.lossAvg === null || row.cohensD === null) return ''
           return [
             `<strong>${metricLabel(row)}</strong>`,
             `${t('tooltipWinAvg')}: ${row.format(row.winAvg)}（n=${row.nWin}）`,
@@ -54,7 +57,7 @@ export function WinLossChart({ data }: WinLossChartProps) {
       yAxis: {
         type: 'category',
         inverse: true,
-        data: data.map(metricLabel),
+        data: comparableData.map(metricLabel),
         axisLine: { lineStyle: { color: palette.baseline } },
         axisTick: { show: false },
         axisLabel: { color: palette.textSecondary },
@@ -62,17 +65,17 @@ export function WinLossChart({ data }: WinLossChartProps) {
       series: [
         {
           type: 'bar',
-          data: data.map((d) => ({
-            value: Number(d.cohensD.toFixed(3)),
-            itemStyle: { color: d.cohensD >= 0 ? palette.status.good : palette.status.critical },
+          data: comparableData.map((d) => ({
+            value: Number((d.cohensD ?? 0).toFixed(3)),
+            itemStyle: { color: (d.cohensD ?? 0) >= 0 ? palette.status.good : palette.status.critical },
           })),
           barMaxWidth: 20,
         },
       ],
       }
     },
-    [data, t],
+    [comparableData, t],
   )
 
-  return <EChart option={option} height={Math.max(200, data.length * 34 + 48)} />
+  return <EChart option={option} height={Math.max(200, comparableData.length * 34 + 48)} />
 }

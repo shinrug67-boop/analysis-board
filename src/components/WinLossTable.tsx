@@ -10,7 +10,12 @@ function metricLabel(t: TFunction, row: WinLossRow): string {
   return t(`metric_${row.key}` as TranslationKey)
 }
 
+function formatValue(row: WinLossRow, value: number | null): string {
+  return value === null ? '—' : row.format(value)
+}
+
 function formatAdvantage(row: WinLossRow): string {
+  if (row.advantage === null) return '—'
   const sign = row.advantage >= 0 ? '+' : '-'
   return `${sign}${row.format(Math.abs(row.advantage))}`
 }
@@ -33,14 +38,14 @@ export function WinLossTable({ rows }: { rows: WinLossRow[] }) {
         label: t('colWinAvg'),
         align: 'right',
         sortValue: (r) => r.winAvg,
-        render: (r) => r.format(r.winAvg),
+        render: (r) => formatValue(r, r.winAvg),
       },
       {
         key: 'lossAvg',
         label: t('colLossAvg'),
         align: 'right',
         sortValue: (r) => r.lossAvg,
-        render: (r) => r.format(r.lossAvg),
+        render: (r) => formatValue(r, r.lossAvg),
       },
       {
         key: 'advantage',
@@ -55,8 +60,8 @@ export function WinLossTable({ rows }: { rows: WinLossRow[] }) {
         key: 'cohensD',
         label: t('colEffectSize'),
         align: 'right',
-        sortValue: (r) => Math.abs(r.cohensD),
-        render: (r) => r.cohensD.toFixed(2),
+        sortValue: (r) => (r.cohensD === null ? null : Math.abs(r.cohensD)),
+        render: (r) => (r.cohensD === null ? '—' : r.cohensD.toFixed(2)),
       },
       {
         key: 'threshold',

@@ -103,12 +103,17 @@ export function resultBreakdown(rows: MatchTeamRow[]) {
 export interface WinLossRow {
   key: string
   format: (value: number) => string
-  winAvg: number
-  lossAvg: number
-  /** 勝ちに有利な方向を正にそろえた差（元の単位）。higherIsBetter=falseの指標は符号を反転済み。 */
-  advantage: number
-  /** 効果量（Cohen's d）。advantageと同じ向きに符号をそろえている。単位に依存せず指標間で比較できる。 */
-  cohensD: number
+  /** 勝ち試合の平均。nWin=0（該当試合が無い）ならnull。 */
+  winAvg: number | null
+  /** 負け試合の平均。nLoss=0ならnull。 */
+  lossAvg: number | null
+  /**
+   * 勝ちに有利な方向を正にそろえた差（元の単位）。higherIsBetter=falseの指標は符号を反転済み。
+   * 勝ち・負けどちらかの試合が0件で比較不能な場合はnull（例: 特定の対戦相手に全勝/全敗しているケース）。
+   */
+  advantage: number | null
+  /** 効果量（Cohen's d）。advantageと同じ向きに符号をそろえている。単位に依存せず指標間で比較できる。比較不能ならnull。 */
+  cohensD: number | null
   nWin: number
   nLoss: number
   /**
@@ -386,22 +391,31 @@ export function winLossComparison(rows: ExtendedMatchRow[]): WinLossRow[] {
     const lossValues = lossRows.map(metric.getValue).filter((v): v is number => v !== null)
     const w = meanAndVariance(winValues)
     const l = meanAndVariance(lossValues)
+    // 勝ち・負けどちらかが0件だと比較が成立しない（例: 特定の対戦相手に全勝/全敗）。
+    // その場合advantage/cohensD/thresholdはnullにする（0や見かけ上の値を出すと誤解を招くため）。
+    const hasBothSides = w.n > 0 && l.n > 0
 
-    const rawDiff = w.mean - l.mean
-    const advantage = metric.higherIsBetter ? rawDiff : -rawDiff
+    let advantage: number | null = null
+    let cohensD: number | null = null
+    if (hasBothSides) {
+      const rawDiff = w.mean - l.mean
+      advantage = metric.higherIsBetter ? rawDiff : -rawDiff
 
-    const pooledDf = w.n + l.n - 2
-    const pooledVariance = pooledDf > 0 ? ((w.n - 1) * w.variance + (l.n - 1) * l.variance) / pooledDf : 0
-    const pooledSd = Math.sqrt(pooledVariance)
-    const cohensD = pooledSd > 0 ? advantage / pooledSd : 0
+      const pooledDf = w.n + l.n - 2
+      const pooledVariance = pooledDf > 0 ? ((w.n - 1) * w.variance + (l.n - 1) * l.variance) / pooledDf : 0
+      const pooledSd = Math.sqrt(pooledVariance)
+      cohensD = pooledSd > 0 ? advantage / pooledSd : 0
+    }
 
-    const { threshold, accuracy } = findBestThreshold(winValues, lossValues, metric.higherIsBetter)
+    const { threshold, accuracy } = hasBothSides
+      ? findBestThreshold(winValues, lossValues, metric.higherIsBetter)
+      : { threshold: null, accuracy: null }
 
     return {
       key: metric.key,
       format: metric.format,
-      winAvg: w.mean,
-      lossAvg: l.mean,
+      winAvg: w.n > 0 ? w.mean : null,
+      lossAvg: l.n > 0 ? l.mean : null,
       advantage,
       cohensD,
       nWin: w.n,
@@ -410,7 +424,7 @@ export function winLossComparison(rows: ExtendedMatchRow[]): WinLossRow[] {
       thresholdDirection: metric.higherIsBetter ? ('>=' as const) : ('<=' as const),
       thresholdAccuracy: accuracy,
     }
-  }).sort((a, b) => Math.abs(b.cohensD) - Math.abs(a.cohensD))
+  }).sort((a, b) => Math.abs(b.cohensD ?? 0) - Math.abs(a.cohensD ?? 0))
 }
 
 /** 選手別ランキング（期間合計）の1行分。 */

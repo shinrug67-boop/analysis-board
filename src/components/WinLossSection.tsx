@@ -6,8 +6,8 @@ import { WinLossChart } from './charts/WinLossChart'
 import { WinLossTable } from './WinLossTable'
 
 /**
- * 勝敗差分析一式（シーズン/チームのローカル絞り込み＋効果量チャート＋詳細テーブル）。
- * グローバルのチーム/シーズンSlicerとは独立して、この中で完結した状態を持つ
+ * 勝敗差分析一式（シーズン/チーム/対戦相手のローカル絞り込み＋効果量チャート＋詳細テーブル）。
+ * グローバルのSlicerとは独立して、この中で完結した状態を持つ
  * （キッキングチャートと同じ考え方。「すべて」を選べば全データで見られる）。
  */
 export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: KickEvent[] }) {
@@ -23,10 +23,23 @@ export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: K
   }, [rows, season])
   const [team, setTeam] = useState('')
 
+  const opponentsForSelection = useMemo(() => {
+    const scoped = rows.filter(
+      (r) => (season === '' || r.season === season) && (team === '' || r.team === team),
+    )
+    return [...uniqueValues(scoped, (r) => r.opponent)].sort()
+  }, [rows, season, team])
+  const [opponent, setOpponent] = useState('')
+
   const filteredRows = useMemo(
     () =>
-      extendedRows.filter((r) => (season === '' || r.season === season) && (team === '' || r.team === team)),
-    [extendedRows, season, team],
+      extendedRows.filter(
+        (r) =>
+          (season === '' || r.season === season) &&
+          (team === '' || r.team === team) &&
+          (opponent === '' || r.opponent === opponent),
+      ),
+    [extendedRows, season, team, opponent],
   )
   const winLossRows = useMemo(() => winLossComparison(filteredRows), [filteredRows])
 
@@ -41,6 +54,7 @@ export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: K
             onChange={(e) => {
               setSeason(e.target.value)
               setTeam('')
+              setOpponent('')
             }}
           >
             <option value="">{t('all')}</option>
@@ -53,11 +67,29 @@ export function WinLossSection({ rows, kicks }: { rows: MatchTeamRow[]; kicks: K
         </div>
         <div className="slicer__group">
           <span className="slicer__label">{t('team')}</span>
-          <select className="select" value={team} onChange={(e) => setTeam(e.target.value)}>
+          <select
+            className="select"
+            value={team}
+            onChange={(e) => {
+              setTeam(e.target.value)
+              setOpponent('')
+            }}
+          >
             <option value="">{t('all')}</option>
             {teamsForSeason.map((teamOption) => (
               <option key={teamOption} value={teamOption}>
                 {teamOption}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="slicer__group">
+          <span className="slicer__label">{t('colOpponent')}</span>
+          <select className="select" value={opponent} onChange={(e) => setOpponent(e.target.value)}>
+            <option value="">{t('all')}</option>
+            {opponentsForSelection.map((opponentOption) => (
+              <option key={opponentOption} value={opponentOption}>
+                {opponentOption}
               </option>
             ))}
           </select>
