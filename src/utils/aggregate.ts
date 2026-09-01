@@ -124,6 +124,21 @@ export interface ExtendedMatchRow extends MatchTeamRow {
   metresPerCarry: number | null
   /** インプレーキック（ペナルティキック除く）に占めるエラー系結果の割合。キックが0本ならnull。 */
   kickErrorRate: number | null
+  /**
+   * コンテストキック（Box/Bomb）のうち、相手のクリーンキャッチ（Caught Full/Collected Bounce）にも
+   * 自チームのミス（Own Player - Failed／Error系）にもならなかった割合。
+   * 「自チームが直接キャッチできたか」だけを見る再獲得率は勝敗との相関がほぼ無かった（d≈0.01、
+   * 実データで検証済み）ため採用せず、こちらの広い意味での有効利用率を採用している（d≈0.16）。
+   * コンテストキックが0本ならnull。
+   */
+  contestKickEffectiveRate: number | null
+}
+
+const CONTEST_KICK_TYPES = new Set(['Box', 'Bomb'])
+const CONTEST_KICK_INEFFECTIVE_OUTCOMES = new Set(['Caught Full', 'Collected Bounce', 'Own Player - Failed'])
+
+function isContestKickEffective(outcome: string): boolean {
+  return !outcome.startsWith('Error') && !CONTEST_KICK_INEFFECTIVE_OUTCOMES.has(outcome)
 }
 
 /**
@@ -153,7 +168,11 @@ export function attachDerivedMetrics(rows: MatchTeamRow[], kicks: KickEvent[]): 
     const errorKicks = teamKicks.filter((k) => k.outcome.startsWith('Error')).length
     const kickErrorRate = teamKicks.length ? errorKicks / teamKicks.length : null
 
-    return { ...row, penaltiesWon, metresPerCarry, kickErrorRate }
+    const contestKicks = teamKicks.filter((k) => CONTEST_KICK_TYPES.has(k.kickType))
+    const effectiveContestKicks = contestKicks.filter((k) => isContestKickEffective(k.outcome)).length
+    const contestKickEffectiveRate = contestKicks.length ? effectiveContestKicks / contestKicks.length : null
+
+    return { ...row, penaltiesWon, metresPerCarry, kickErrorRate, contestKickEffectiveRate }
   })
 }
 
@@ -226,6 +245,12 @@ const WIN_LOSS_METRICS: WinLossMetricDef[] = [
     key: 'kickErrorRate',
     higherIsBetter: false,
     getValue: (r) => r.kickErrorRate,
+    format: formatPercent,
+  },
+  {
+    key: 'contestKickEffectiveRate',
+    higherIsBetter: true,
+    getValue: (r) => r.contestKickEffectiveRate,
     format: formatPercent,
   },
 ]

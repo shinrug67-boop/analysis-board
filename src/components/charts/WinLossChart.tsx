@@ -28,7 +28,7 @@ export function WinLossChart({ data }: WinLossChartProps) {
       const metricLabel = (row: WinLossRow) => t(`metric_${row.key}` as TranslationKey)
       return {
       textStyle: { fontFamily, color: palette.textPrimary },
-      grid: { left: 150, right: 24, top: 16, bottom: 32 },
+      grid: { left: 300, right: 24, top: 16, bottom: 32 },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },

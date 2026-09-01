@@ -89,6 +89,7 @@ const ja = {
   metric_penaltiesWon: 'ペナルティ獲得',
   metric_metresPerCarry: 'キャリー1回あたり獲得m',
   metric_kickErrorRate: 'キックのミス率',
+  metric_contestKickEffectiveRate: 'コンテストキック有効利用率（Box+Bomb）',
 
   // --- キッキングチャート ---
   round: 'ラウンド',
@@ -194,6 +195,7 @@ const en: Dict = {
   metric_penaltiesWon: 'Penalties won',
   metric_metresPerCarry: 'Metres per carry',
   metric_kickErrorRate: 'Kick error rate',
+  metric_contestKickEffectiveRate: 'Contestable kick effective rate (Box+Bomb)',
 
   round: 'Round',
   showAllRounds: 'Show all rounds',
