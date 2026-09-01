@@ -11,14 +11,18 @@ interface BarChartProps {
   unit?: string
   /** 値の整形（未指定なら小数を丸めて表示）。%表示など呼び出し側で自由に整形できる。 */
   valueFormatter?: (value: number) => string
+  /**
+   * キーごとの色を指定する（チーム比較チャートでチームカラーに塗り分ける用途）。
+   * 未指定なら単色（slot 1）。系列は1つでx軸ラベルが本来の識別手段のため、
+   * これはあくまで補強の意味合い（凡例は付けない）。
+   */
+  colorForKey?: (key: string) => string
 }
 
 /**
  * チーム比較用の汎用棒グラフ（トライ数・キャリー獲得メートル・スクラム/ラインアウト成功率などで共用）。
- * 系列は1つ（他の次元との掛け合わせがない）ため、単色（slot 1）で統一し、
- * カテゴリの識別はx軸ラベルに任せる。
  */
-export function BarChart({ data, unit, valueFormatter }: BarChartProps) {
+export function BarChart({ data, unit, valueFormatter, colorForKey }: BarChartProps) {
   const format = valueFormatter ?? defaultValueFormatter
 
   const option = useMemo<EChartsOption>(
@@ -46,13 +50,16 @@ export function BarChart({ data, unit, valueFormatter }: BarChartProps) {
       series: [
         {
           type: 'bar',
-          data: data.map((d) => d.value),
+          data: data.map((d) => ({
+            value: d.value,
+            itemStyle: { color: colorForKey ? colorForKey(d.key) : palette.categorical[0] },
+          })),
           barMaxWidth: 24,
-          itemStyle: { color: palette.categorical[0], borderRadius: [4, 4, 0, 0] },
+          itemStyle: { borderRadius: [4, 4, 0, 0] },
         },
       ],
     }),
-    [data, unit, format],
+    [data, unit, format, colorForKey],
   )
 
   return <EChart option={option} height={360} />

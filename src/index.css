@@ -95,6 +95,33 @@ body {
   font-weight: 600;
 }
 
+.kick-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.kick-layout__pitch {
+  flex: 0 0 320px;
+  max-width: 320px;
+}
+
+.kick-layout__table {
+  flex: 1 1 320px;
+  min-width: 280px;
+}
+
+.kick-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  border: 1px solid var(--border);
+  vertical-align: middle;
+}
+
 .select {
   font-family: var(--font-sans);
   font-size: 13px;

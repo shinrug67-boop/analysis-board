@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 
 export interface Column<T> {
   key: string
@@ -6,8 +7,8 @@ export interface Column<T> {
   align?: 'right'
   /** ソート用の比較値（文字列・数値・真偽値・null）を返す。 */
   sortValue: (row: T) => string | number | boolean | null
-  /** セル表示用の文字列。 */
-  render: (row: T) => string
+  /** セル表示内容（通常は文字列。色見本など軽い装飾が必要な列はReactNodeを返してもよい）。 */
+  render: (row: T) => ReactNode
 }
 
 interface TableProps<T> {

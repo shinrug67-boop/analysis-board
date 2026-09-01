@@ -13,6 +13,7 @@ import {
   uniqueValues,
 } from './utils/aggregate'
 import { formatPercent, formatMetres } from './utils/format'
+import { getTeamColor } from './theme/teamColors'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Slicer } from './components/Slicer'
 import { BarChart } from './components/charts/BarChart'
@@ -74,7 +75,7 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
       <section className="dashboard__charts">
         <div className="card">
           <h2>チーム別 トライ数合計</h2>
-          <BarChart data={byTeam} unit="本" />
+          <BarChart data={byTeam} unit="本" colorForKey={getTeamColor} />
         </div>
         <div className="card">
           <h2>日別 タックル成功率推移</h2>
@@ -86,15 +87,15 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
         </div>
         <div className="card">
           <h2>チーム別 平均キャリー獲得m（1試合あたり）</h2>
-          <BarChart data={carryByTeam} valueFormatter={formatMetres} />
+          <BarChart data={carryByTeam} valueFormatter={formatMetres} colorForKey={getTeamColor} />
         </div>
         <div className="card">
           <h2>チーム別 スクラム成功率</h2>
-          <BarChart data={scrumByTeam} valueFormatter={formatPercent} />
+          <BarChart data={scrumByTeam} valueFormatter={formatPercent} colorForKey={getTeamColor} />
         </div>
         <div className="card">
           <h2>チーム別 ラインアウト成功率</h2>
-          <BarChart data={lineoutByTeam} valueFormatter={formatPercent} />
+          <BarChart data={lineoutByTeam} valueFormatter={formatPercent} colorForKey={getTeamColor} />
         </div>
       </section>
 

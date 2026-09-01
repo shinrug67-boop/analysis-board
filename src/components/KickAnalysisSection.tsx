@@ -3,38 +3,45 @@ import type { KickEvent } from '../types/match'
 import { uniqueValues } from '../utils/aggregate'
 import { KickFilters } from './KickFilters'
 import { PitchChart } from './charts/PitchChart'
+import { KickTypeBreakdown } from './KickTypeBreakdown'
+
+const INCLUDED_PHASES = new Set(['Kick in Play', 'Kick in Play (Own 22)'])
 
 function sortRounds(rounds: string[]): string[] {
   return [...rounds].sort((a, b) => Number(a) - Number(b))
 }
 
 /**
- * キッキングチャート一式（シーズン/チーム/ラウンドのローカル絞り込み＋フィールド図）。
+ * キッキングチャート一式（シーズン/チーム/ラウンドのローカル絞り込み＋フィールド図＋種別内訳）。
  * グローバルのチーム/シーズンSlicerとは独立して、この中で完結した状態を持つ。
+ * ペナルティキックは対象外とし、Kick in Play / Kick in Play (Own 22) のみを扱う。
  */
 export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
-  const allSeasons = useMemo(() => [...uniqueValues(kicks, (k) => k.season)].sort(), [kicks])
+  const inPlayKicks = useMemo(() => kicks.filter((k) => INCLUDED_PHASES.has(k.phase)), [kicks])
+
+  const allSeasons = useMemo(() => [...uniqueValues(inPlayKicks, (k) => k.season)].sort(), [inPlayKicks])
   const [seasonOverride, setSeasonOverride] = useState('')
   const season = seasonOverride || allSeasons[allSeasons.length - 1] || ''
 
   const teamsInSeason = useMemo(
-    () => [...uniqueValues(kicks.filter((k) => k.season === season), (k) => k.team)].sort(),
-    [kicks, season],
+    () => [...uniqueValues(inPlayKicks.filter((k) => k.season === season), (k) => k.team)].sort(),
+    [inPlayKicks, season],
   )
   const [teamOverride, setTeamOverride] = useState('')
   const team = teamOverride || teamsInSeason[0] || ''
 
   const roundsForSelection = useMemo(
-    () => sortRounds(uniqueValues(kicks.filter((k) => k.season === season && k.team === team), (k) => k.round)),
-    [kicks, season, team],
+    () =>
+      sortRounds(uniqueValues(inPlayKicks.filter((k) => k.season === season && k.team === team), (k) => k.round)),
+    [inPlayKicks, season, team],
   )
   const [selectedRoundsOverride, setSelectedRoundsOverride] = useState<string[] | null>(null)
   const selectedRounds = selectedRoundsOverride ?? roundsForSelection
 
   const filteredKicks = useMemo(
     () =>
-      kicks.filter((k) => k.season === season && k.team === team && selectedRounds.includes(k.round)),
-    [kicks, season, team, selectedRounds],
+      inPlayKicks.filter((k) => k.season === season && k.team === team && selectedRounds.includes(k.round)),
+    [inPlayKicks, season, team, selectedRounds],
   )
 
   return (
@@ -65,9 +72,17 @@ export function KickAnalysisSection({ kicks }: { kicks: KickEvent[] }) {
       />
       <div className="card">
         <h2>
-          キッキングチャート（{team || '—'} / {selectedRounds.length}ラウンド分・{filteredKicks.length}本）
+          キッキングチャート（{team || '—'} / {selectedRounds.length}ラウンド分・{filteredKicks.length}本、
+          Kick in Play系のみ）
         </h2>
-        <PitchChart kicks={filteredKicks} />
+        <div className="kick-layout">
+          <div className="kick-layout__pitch">
+            <PitchChart kicks={filteredKicks} />
+          </div>
+          <div className="kick-layout__table">
+            <KickTypeBreakdown kicks={filteredKicks} />
+          </div>
+        </div>
       </div>
     </>
   )
