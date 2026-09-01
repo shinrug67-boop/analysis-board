@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Table } from './Table'
 import type { Column } from './Table'
 import type { WinLossRow } from '../utils/aggregate'
+import { formatPercent } from '../utils/format'
 import { useLanguage, type TFunction } from '../i18n/LanguageContext'
 import type { TranslationKey } from '../i18n/translations'
 
@@ -12,6 +13,12 @@ function metricLabel(t: TFunction, row: WinLossRow): string {
 function formatAdvantage(row: WinLossRow): string {
   const sign = row.advantage >= 0 ? '+' : '-'
   return `${sign}${row.format(Math.abs(row.advantage))}`
+}
+
+function formatThreshold(row: WinLossRow): string {
+  if (row.threshold === null) return '—'
+  const symbol = row.thresholdDirection === '>=' ? '≥' : '≤'
+  return `${symbol} ${row.format(row.threshold)}`
 }
 
 /** 勝敗差分析の詳細数値テーブル。デフォルトは効果量の大きい順。 */
@@ -50,6 +57,20 @@ export function WinLossTable({ rows }: { rows: WinLossRow[] }) {
         align: 'right',
         sortValue: (r) => Math.abs(r.cohensD),
         render: (r) => r.cohensD.toFixed(2),
+      },
+      {
+        key: 'threshold',
+        label: t('colThreshold'),
+        align: 'right',
+        sortValue: (r) => r.threshold,
+        render: formatThreshold,
+      },
+      {
+        key: 'thresholdAccuracy',
+        label: t('colThresholdAccuracy'),
+        align: 'right',
+        sortValue: (r) => r.thresholdAccuracy,
+        render: (r) => (r.thresholdAccuracy === null ? '—' : formatPercent(r.thresholdAccuracy)),
       },
     ],
     [t],

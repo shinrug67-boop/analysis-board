@@ -76,6 +76,8 @@ const ja = {
   colNWin: 'n(勝)',
   colNLoss: 'n(負)',
   colEffectSize: '効果量(d)',
+  colThreshold: '分岐点',
+  colThresholdAccuracy: '的中率',
 
   metric_tries: 'トライ数',
   metric_tackleSuccessRate: 'タックル成功率',
@@ -186,6 +188,8 @@ const en: Dict = {
   colNWin: 'n (win)',
   colNLoss: 'n (loss)',
   colEffectSize: 'Effect size (d)',
+  colThreshold: 'Break-even point',
+  colThresholdAccuracy: 'Accuracy',
 
   metric_tries: 'Tries',
   metric_tackleSuccessRate: 'Tackle success rate',

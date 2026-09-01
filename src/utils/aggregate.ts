@@ -111,6 +111,70 @@ export interface WinLossRow {
   cohensD: number
   nWin: number
   nLoss: number
+  /**
+   * 勝敗を最もよく分ける分岐点（しきい値）。「この値の側にいれば勝ち/負けと予測すると
+   * 一番当たる」という単純な1変数ルールの最適な境界を全データから探索して求める。
+   * 全試合が同じ値などデータが1点しかない場合はnull。
+   */
+  threshold: number | null
+  /** thresholdをどちら向きに読むか（higherIsBetter=trueなら'>='、falseなら'<='が勝ち予測側）。 */
+  thresholdDirection: '>=' | '<='
+  /** そのthresholdだけで勝敗を予測した場合の的中率（0〜1）。 */
+  thresholdAccuracy: number | null
+}
+
+interface ThresholdSearchResult {
+  threshold: number | null
+  accuracy: number | null
+}
+
+/**
+ * 「value {>= or <=} threshold なら勝ちと予測する」という単純な1点しきい値ルールのうち、
+ * 的中率が最大になるthresholdを全探索する（決定木の1分岐と同じ考え方）。
+ * 同値が並ぶ区間の途中では区切らない（タイを分割しない）。
+ */
+function findBestThreshold(winValues: number[], lossValues: number[], higherIsBetter: boolean): ThresholdSearchResult {
+  const combined = [
+    ...winValues.map((v) => ({ v, isWin: true })),
+    ...lossValues.map((v) => ({ v, isWin: false })),
+  ].sort((a, b) => a.v - b.v)
+
+  const n = combined.length
+  if (n === 0) return { threshold: null, accuracy: null }
+
+  const totalWin = winValues.length
+  let prefixWin = 0
+  let bestCorrect = -1
+  let bestIndex = 0
+
+  for (let i = 0; i <= n; i++) {
+    const leftWin = prefixWin
+    const leftLoss = i - leftWin
+    const rightWin = totalWin - leftWin
+    const rightLoss = n - i - rightWin
+
+    // higherIsBetter: 右側(値が高い方)を勝ち予測、左側を負け予測。falseならその逆。
+    const correct = higherIsBetter ? leftLoss + rightWin : leftWin + rightLoss
+
+    const isValidSplit = i === 0 || i === n || combined[i - 1].v !== combined[i].v
+    if (isValidSplit && correct > bestCorrect) {
+      bestCorrect = correct
+      bestIndex = i
+    }
+
+    if (i < n && combined[i].isWin) prefixWin += 1
+  }
+
+  let threshold: number
+  if (bestIndex === 0) {
+    threshold = combined[0].v
+  } else if (bestIndex === n) {
+    threshold = combined[n - 1].v
+  } else {
+    threshold = (combined[bestIndex - 1].v + combined[bestIndex].v) / 2
+  }
+
+  return { threshold, accuracy: bestCorrect / n }
 }
 
 /**
@@ -331,6 +395,8 @@ export function winLossComparison(rows: ExtendedMatchRow[]): WinLossRow[] {
     const pooledSd = Math.sqrt(pooledVariance)
     const cohensD = pooledSd > 0 ? advantage / pooledSd : 0
 
+    const { threshold, accuracy } = findBestThreshold(winValues, lossValues, metric.higherIsBetter)
+
     return {
       key: metric.key,
       format: metric.format,
@@ -340,6 +406,9 @@ export function winLossComparison(rows: ExtendedMatchRow[]): WinLossRow[] {
       cohensD,
       nWin: w.n,
       nLoss: l.n,
+      threshold,
+      thresholdDirection: metric.higherIsBetter ? ('>=' as const) : ('<=' as const),
+      thresholdAccuracy: accuracy,
     }
   }).sort((a, b) => Math.abs(b.cohensD) - Math.abs(a.cohensD))
 }
