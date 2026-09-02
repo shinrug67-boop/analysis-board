@@ -21,6 +21,7 @@ const ja = {
   sectionPlayerRanking: '選手成績ランキング（期間合計）',
   sectionKickingChart: 'キッキングチャート',
   sectionWinLoss: '勝敗差分析（勝ち試合 vs 負け試合）',
+  sectionDefenseTable: 'チーム別 ディフェンス集計',
 
   // --- チームチャート見出し ---
   chartTriesByTeam: 'チーム別 トライ数合計',
@@ -107,11 +108,28 @@ const ja = {
   colKickShare: '割合',
   colAvgDistance: '平均距離',
 
+  // --- チーム別ディフェンス集計（DefenseTable）列 ---
+  colTeamShort: 'チーム',
+  colTackleAttemptAve: 'タックル数(平均)',
+  colTackleRate: 'タックル成功率',
+  colTackleRateRank: 'タックル成功率 順位',
+  colTackleDom: 'ドミナントタックル',
+  colTackleDomAve: 'ドミナントタックル(平均)',
+  colOffloadAllowed: 'オフロード許容',
+  colOffloadAllowedAve: 'オフロード許容(平均)',
+  colJackal: 'ジャッカル試行',
+  colJackalWon: 'ジャッカル成功',
+  colJackalWonAve: 'ジャッカル成功(平均)',
+  colJackalRate: 'ジャッカル成功率',
+  colTurnoverWonTackle: 'タックルでのTO獲得',
+  colPenaltiesDefence: 'ペナルティ(防御時)',
+
   // --- 汎用テーブル ---
   noData: '該当するデータがありません',
   paginationSummary: '{total}件中 {from}–{to} 件を表示',
   prevPage: '前へ',
   nextPage: '次へ',
+  total: '合計',
 
   // --- PitchChartツールチップ ---
   tooltipOutcome: '結果',
@@ -138,6 +156,7 @@ const en: Dict = {
   sectionPlayerRanking: 'Player Ranking (Period Total)',
   sectionKickingChart: 'Kicking Chart',
   sectionWinLoss: 'Win/Loss Analysis (Wins vs Losses)',
+  sectionDefenseTable: 'Defensive Stats by Team',
 
   chartTriesByTeam: 'Total Tries by Team',
   chartTackleTrend: 'Daily Tackle Success Rate Trend',
@@ -218,10 +237,26 @@ const en: Dict = {
   colKickShare: 'Share',
   colAvgDistance: 'Avg distance',
 
+  colTeamShort: 'Team',
+  colTackleAttemptAve: 'Tackle Attempt Ave',
+  colTackleRate: 'Tackle%',
+  colTackleRateRank: 'Tackle% Rank',
+  colTackleDom: 'Tackle Dom',
+  colTackleDomAve: 'Tackle Dom Ave',
+  colOffloadAllowed: 'Offload Allowed',
+  colOffloadAllowedAve: 'Offload Allowed Ave',
+  colJackal: 'Jackal',
+  colJackalWon: 'Jackal Won',
+  colJackalWonAve: 'Jackal Won Ave',
+  colJackalRate: 'Jackal%',
+  colTurnoverWonTackle: 'TO Won (Tackle)',
+  colPenaltiesDefence: 'Pen Conceded (DF)',
+
   noData: 'No matching data',
   paginationSummary: 'Showing {from}–{to} of {total}',
   prevPage: 'Prev',
   nextPage: 'Next',
+  total: 'Total',
 
   tooltipOutcome: 'Outcome',
   tooltipDistance: 'Distance',

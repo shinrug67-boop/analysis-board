@@ -66,6 +66,11 @@ python3 scripts/build_summaries.py --input /path/to/生イベントログ.csv
 | possession_seconds | `actionName=="Possession"` の `ps_endstamp - ps_timestamp` 合計（ボール保持時間）。勝敗差分析では相手チームとの合計に対する比率（ボール保持率）として使用 |
 | line_breaks | `actionName=="Attacking Qualities" AND ActionTypeName=="Initial Break"` の件数（ラインブレイク数） |
 | entries_22 / entries_22_tries | `actionName=="Attacking 22 Entry"` の件数（敵陣22m侵入回数）。tries はそのうち`ActionTypeName=="22 Entry Outcome - Try"`の件数（22m侵入→トライ転換率の分子） |
+| tackles_dominant | Tackle件数のうち `qualifier4Name=="Dominant Tackle"` の件数（ドミナントタックル。多くは`ActionResultName=="Sack"`と対応） |
+| offload_allowed_tackles | Tackle件数のうち `ActionResultName=="Offload Allowed"` の件数（タックルはしたがボールをオフロードされた回数） |
+| jackal_attempts / jackal_won | `actionName=="Collection" AND ActionTypeName=="Jackal"` の件数（ブレイクダウンでのボール奪取試行）。wonはそのうち`ActionResultName=="Success"`の件数 |
+| turnovers_won_tackle | `actionName=="Tackle" AND ActionResultName=="Turnover Won"` の件数（タックルからそのままターンオーバーを奪った回数） |
+| penalties_conceded_defence | Penalty Concededのうち `qualifier3Name=="Defence"` の件数（自陣防御中に犯したペナルティ。攻撃側のオフサイド等は含まない） |
 
 **試合×選手のみ**
 
@@ -98,7 +103,8 @@ python3 scripts/build_summaries.py --input /path/to/生イベントログ.csv
 - 明細テーブル（試合×チーム成績、列ソート・ページネーション）
 - 選手成績ランキング表（期間合計、列ソート・ページネーション）
 - キッキングチャート（シーズン/チーム/ラウンドを選んで、キックの軌道を矢印でフィールド上に表示）
-- グローバルスライサー（チーム・シーズン）で上記の大半のチャート/テーブルを連動して絞り込み
+- チーム別ディフェンス集計表（タックル成功率・ドミナントタックル・ジャッカル・ペナルティ等、順位付き。末尾に全チーム合計行）
+- グローバルスライサー（チーム・シーズン・対戦相手）で上記の大半のチャート/テーブルを連動して絞り込み
 
 ## 今後の拡張候補
 

@@ -19,6 +19,10 @@ interface TableProps<T> {
   defaultSortKey: string
   defaultSortDir?: 'asc' | 'desc'
   pageSize?: number
+  /** 指定すると、ソート・ページネーションの影響を受けない「合計」行を末尾に固定表示する。 */
+  totalRow?: T
+  /** totalRow の左端ラベル（例:「合計」）。totalRow指定時は必須。 */
+  totalRowLabel?: string
 }
 
 function compareValues(a: string | number | boolean | null, b: string | number | boolean | null): number {
@@ -32,7 +36,16 @@ function compareValues(a: string | number | boolean | null, b: string | number |
  * 汎用テーブル（列ソート・簡易ページネーション）。試合成績明細・選手ランキング表など、
  * 行の型に依存しないよう columns/rows/rowKey を props 化している。
  */
-export function Table<T>({ columns, rows, rowKey, defaultSortKey, defaultSortDir = 'desc', pageSize = 20 }: TableProps<T>) {
+export function Table<T>({
+  columns,
+  rows,
+  rowKey,
+  defaultSortKey,
+  defaultSortDir = 'desc',
+  pageSize = 20,
+  totalRow,
+  totalRowLabel,
+}: TableProps<T>) {
   const { t, lang } = useLanguage()
   const [sortKey, setSortKey] = useState(defaultSortKey)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(defaultSortDir)
@@ -107,6 +120,17 @@ export function Table<T>({ columns, rows, rowKey, defaultSortKey, defaultSortDir
               </tr>
             )}
           </tbody>
+          {totalRow !== undefined && (
+            <tfoot>
+              <tr className="data-table__total-row">
+                {columns.map((col, i) => (
+                  <td key={col.key} className={col.align === 'right' ? 'is-right is-tabular' : undefined}>
+                    {i === 0 ? totalRowLabel : col.render(totalRow)}
+                  </td>
+                ))}
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
       <div className="data-table__footer">

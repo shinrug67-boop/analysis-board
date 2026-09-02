@@ -29,11 +29,17 @@ export function useMatchData() {
     turnoversConceded: Number(r.turnovers_conceded),
     turnoversWon: Number(r.turnovers_won),
     penaltiesConceded: Number(r.penalties_conceded),
+    penaltiesConcededDefence: Number(r.penalties_conceded_defence),
     yellowCards: Number(r.yellow_cards),
     redCards: Number(r.red_cards),
     possessionSeconds: Number(r.possession_seconds),
     lineBreaks: Number(r.line_breaks),
     entries22: Number(r.entries_22),
     entries22Tries: Number(r.entries_22_tries),
+    tacklesDominant: Number(r.tackles_dominant),
+    offloadAllowedTackles: Number(r.offload_allowed_tackles),
+    jackalAttempts: Number(r.jackal_attempts),
+    jackalWon: Number(r.jackal_won),
+    turnoversWonTackle: Number(r.turnovers_won_tackle),
   }))
 }

@@ -28,6 +28,8 @@ export interface MatchTeamRow {
   turnoversConceded: number
   turnoversWon: number
   penaltiesConceded: number
+  /** 自陣防御中に犯したペナルティ数（Penalty Conceded かつ qualifier3Name=="Defence"）。 */
+  penaltiesConcededDefence: number
   yellowCards: number
   redCards: number
   /** ボール保持時間（秒）。Opta Possessionイベントの継続時間合計。 */
@@ -38,6 +40,16 @@ export interface MatchTeamRow {
   entries22: number
   /** 敵陣22m侵入がトライに至った回数。 */
   entries22Tries: number
+  /** ドミナントタックル数（qualifier4Name=="Dominant Tackle"）。 */
+  tacklesDominant: number
+  /** タックルしたがオフロードを許した回数（ActionResultName=="Offload Allowed"）。 */
+  offloadAllowedTackles: number
+  /** ジャッカル（ブレイクダウンでのボール奪取）試行数（Collection × ActionTypeName=="Jackal"）。 */
+  jackalAttempts: number
+  /** ジャッカル成功数（ActionResultName=="Success"）。 */
+  jackalWon: number
+  /** タックルからそのままターンオーバーを奪った回数（Tackle × ActionResultName=="Turnover Won"）。 */
+  turnoversWonTackle: number
 }
 
 /** 試合×選手単位の集計データ1行分。public/data/match_player_summary.csv の列に対応する。 */

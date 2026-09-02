@@ -505,3 +505,145 @@ export function uniqueValues<T>(rows: T[], keyFn: (row: T) => string) {
   }
   return result
 }
+
+/** チーム別ディフェンス集計表（タックル・ジャッカル・ペナルティ）の1行分。 */
+export interface DefenseRow {
+  team: string
+  matches: number
+  tackleAttemptAve: number
+  tacklesMade: number
+  tacklesAttempted: number
+  tackleSuccessRate: number | null
+  /** タックル成功率の順位（1位が最良）。同率は同順位。成功率がない場合はnull。 */
+  tackleRank: number | null
+  tacklesDominant: number
+  tackleDominantAve: number
+  offloadAllowedTackles: number
+  offloadAllowedAve: number
+  jackalAttempts: number
+  jackalWon: number
+  jackalWonAve: number
+  jackalSuccessRate: number | null
+  turnoversWonTackle: number
+  penaltiesConceded: number
+  penaltiesConcededDefence: number
+}
+
+/**
+ * チーム別のディフェンス集計表を作る。1試合あたり平均（Ave）が意味を持つ列は平均、
+ * 成功率は加重成功率（分子・分母をチーム合計してから割る）、それ以外はシーズン合計で出す。
+ * タックル成功率の順位は同率同順位（1,2,2,4...）。
+ */
+export function defenseLeaderboard(rows: MatchTeamRow[]): DefenseRow[] {
+  interface Totals {
+    matches: number
+    tacklesAttempted: number
+    tacklesMade: number
+    tacklesDominant: number
+    offloadAllowedTackles: number
+    jackalAttempts: number
+    jackalWon: number
+    turnoversWonTackle: number
+    penaltiesConceded: number
+    penaltiesConcededDefence: number
+  }
+  const totalsByTeam = new Map<string, Totals>()
+  const order: string[] = []
+  for (const row of rows) {
+    if (!totalsByTeam.has(row.team)) {
+      totalsByTeam.set(row.team, {
+        matches: 0,
+        tacklesAttempted: 0,
+        tacklesMade: 0,
+        tacklesDominant: 0,
+        offloadAllowedTackles: 0,
+        jackalAttempts: 0,
+        jackalWon: 0,
+        turnoversWonTackle: 0,
+        penaltiesConceded: 0,
+        penaltiesConcededDefence: 0,
+      })
+      order.push(row.team)
+    }
+    const t = totalsByTeam.get(row.team)!
+    t.matches += 1
+    t.tacklesAttempted += row.tacklesAttempted
+    t.tacklesMade += row.tacklesMade
+    t.tacklesDominant += row.tacklesDominant
+    t.offloadAllowedTackles += row.offloadAllowedTackles
+    t.jackalAttempts += row.jackalAttempts
+    t.jackalWon += row.jackalWon
+    t.turnoversWonTackle += row.turnoversWonTackle
+    t.penaltiesConceded += row.penaltiesConceded
+    t.penaltiesConcededDefence += row.penaltiesConcededDefence
+  }
+
+  const result: DefenseRow[] = order.map((team) => {
+    const t = totalsByTeam.get(team)!
+    return {
+      team,
+      matches: t.matches,
+      tacklesAttempted: t.tacklesAttempted,
+      tacklesMade: t.tacklesMade,
+      tackleAttemptAve: t.matches ? t.tacklesAttempted / t.matches : 0,
+      tackleSuccessRate: t.tacklesAttempted ? t.tacklesMade / t.tacklesAttempted : null,
+      tackleRank: null,
+      tacklesDominant: t.tacklesDominant,
+      tackleDominantAve: t.matches ? t.tacklesDominant / t.matches : 0,
+      offloadAllowedTackles: t.offloadAllowedTackles,
+      offloadAllowedAve: t.matches ? t.offloadAllowedTackles / t.matches : 0,
+      jackalAttempts: t.jackalAttempts,
+      jackalWon: t.jackalWon,
+      jackalWonAve: t.matches ? t.jackalWon / t.matches : 0,
+      jackalSuccessRate: t.jackalAttempts ? t.jackalWon / t.jackalAttempts : null,
+      turnoversWonTackle: t.turnoversWonTackle,
+      penaltiesConceded: t.penaltiesConceded,
+      penaltiesConcededDefence: t.penaltiesConcededDefence,
+    }
+  })
+
+  // タックル成功率の高い順に同率同順位（1,2,2,4...）で順位付けする。
+  const byRate = [...result].sort((a, b) => (b.tackleSuccessRate ?? -Infinity) - (a.tackleSuccessRate ?? -Infinity))
+  let rank = 0
+  let prevRate: number | null = null
+  byRate.forEach((row, i) => {
+    if (row.tackleSuccessRate === null) return
+    if (prevRate === null || row.tackleSuccessRate !== prevRate) {
+      rank = i + 1
+      prevRate = row.tackleSuccessRate
+    }
+    row.tackleRank = rank
+  })
+
+  return result.sort((a, b) => a.team.localeCompare(b.team))
+}
+
+/** defenseLeaderboard() の各集計列を合計・加重平均した「合計」行（テーブルの最終行用）。 */
+export function defenseLeaderboardTotal(rows: DefenseRow[]): Omit<DefenseRow, 'team' | 'tackleRank'> {
+  const sum = (f: (r: DefenseRow) => number) => rows.reduce((acc, r) => acc + f(r), 0)
+  const matches = sum((r) => r.matches)
+  const tacklesAttempted = sum((r) => r.tacklesAttempted)
+  const tacklesMade = sum((r) => r.tacklesMade)
+  const tacklesDominant = sum((r) => r.tacklesDominant)
+  const offloadAllowedTackles = sum((r) => r.offloadAllowedTackles)
+  const jackalAttempts = sum((r) => r.jackalAttempts)
+  const jackalWon = sum((r) => r.jackalWon)
+  return {
+    matches,
+    tacklesAttempted,
+    tacklesMade,
+    tackleAttemptAve: matches ? tacklesAttempted / matches : 0,
+    tackleSuccessRate: tacklesAttempted ? tacklesMade / tacklesAttempted : null,
+    tacklesDominant,
+    tackleDominantAve: matches ? tacklesDominant / matches : 0,
+    offloadAllowedTackles,
+    offloadAllowedAve: matches ? offloadAllowedTackles / matches : 0,
+    jackalAttempts,
+    jackalWon,
+    jackalWonAve: matches ? jackalWon / matches : 0,
+    jackalSuccessRate: jackalAttempts ? jackalWon / jackalAttempts : null,
+    turnoversWonTackle: sum((r) => r.turnoversWonTackle),
+    penaltiesConceded: sum((r) => r.penaltiesConceded),
+    penaltiesConcededDefence: sum((r) => r.penaltiesConcededDefence),
+  }
+}

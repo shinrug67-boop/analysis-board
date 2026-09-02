@@ -284,6 +284,12 @@ body {
   color: var(--muted);
 }
 
+.data-table__total-row td {
+  font-weight: 700;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+}
+
 .data-table__footer {
   display: flex;
   align-items: center;

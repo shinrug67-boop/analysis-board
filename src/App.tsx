@@ -10,6 +10,7 @@ import {
   avgTackleSuccessByDate,
   resultBreakdown,
   playerLeaderboard,
+  defenseLeaderboard,
   uniqueValues,
 } from './utils/aggregate'
 import { formatPercent, formatMetres } from './utils/format'
@@ -22,6 +23,7 @@ import { LineChart } from './components/charts/LineChart'
 import { PieChart } from './components/charts/PieChart'
 import { DataTable } from './components/DataTable'
 import { PlayerTable } from './components/PlayerTable'
+import { DefenseTable } from './components/DefenseTable'
 import { KickAnalysisSection } from './components/KickAnalysisSection'
 import { WinLossSection } from './components/WinLossSection'
 import type { MatchTeamRow, PlayerMatchRow, KickEvent } from './types/match'
@@ -70,6 +72,7 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
     [filteredRows],
   )
   const leaderboard = useMemo(() => playerLeaderboard(filteredPlayerRows), [filteredPlayerRows])
+  const defenseRows = useMemo(() => defenseLeaderboard(filteredRows), [filteredRows])
 
   return (
     <DashboardLayout>
@@ -108,6 +111,13 @@ function Dashboard({ rows, playerRows, kicks }: DashboardProps) {
         <div className="card">
           <h2>{t('sectionMatchDetails')}</h2>
           <DataTable rows={filteredRows} />
+        </div>
+      </section>
+
+      <section className="dashboard__section">
+        <h2 className="dashboard__section-title">{t('sectionDefenseTable')}</h2>
+        <div className="card">
+          <DefenseTable rows={defenseRows} />
         </div>
       </section>
 

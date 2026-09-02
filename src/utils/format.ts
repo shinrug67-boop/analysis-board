@@ -8,6 +8,11 @@ export function formatMetres(value: number): string {
   return `${Math.round(value).toLocaleString('ja-JP')}m`
 }
 
+/** 1試合あたり平均などを小数第1位までの表示用文字列に整形する（例:「180.8」）。 */
+export function formatAve(value: number): string {
+  return value.toFixed(1)
+}
+
 /**
  * 日付文字列 (YYYY-MM-DD) を「'24/12/9」表示に整形する（軸ラベル用）。
  * シーズン（12月〜翌年6月）をまたいで表示するため、月日だけだと年が曖昧になり紛らわしい。

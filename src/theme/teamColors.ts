@@ -28,3 +28,28 @@ const FALLBACK_COLOR = '#898781'
 export function getTeamColor(team: string): string {
   return TEAM_COLORS[team] ?? FALLBACK_COLOR
 }
+
+/**
+ * 列幅の狭い表（ディフェンス集計表など）で使う略称。データ上の値（`teamName`）はそのまま
+ * 英語で保持し、表示だけこの短縮名に差し替える。未登録のチーム名はフルネームのまま表示する。
+ */
+const TEAM_SHORT_NAMES: Record<string, string> = {
+  'BlackRams Tokyo': 'BlackRams',
+  'Hanazono Kintetsu Liners': 'Kintetsu',
+  'Kobelco Kobe Steelers': 'Kobelco Kobe',
+  'Kubota Spears': 'Kubota',
+  'Mie Honda Heat': 'Honda',
+  'Mitsubishi Sagamihara Dynaboars': 'Mitsubishi',
+  'Saitama Wild Knights': 'Saitama',
+  'Shizuoka BlueRevs': 'BlueRevs',
+  'Tokyo Sungoliath': 'Sungoliath',
+  'Toshiba Brave Lupus Tokyo': 'Toshiba',
+  'Toyota Verblitz': 'Toyota',
+  'Urayasu D-Rocks': 'D-Rocks',
+  'Yokohama Canon Eagles': 'Canon',
+}
+
+/** チームの略称を返す。未登録のチーム名はそのまま返す。 */
+export function getTeamShortName(team: string): string {
+  return TEAM_SHORT_NAMES[team] ?? team
+}

@@ -28,7 +28,7 @@ NEEDED_COLUMNS = [
     "FXID", "PLID", "teamName", "playerName", "Opposision",
     "datePlayed", "season", "roundNumber", "isHome", "result",
     "hometeamFTscore", "awayteamFTscore", "competitionName",
-    "actionName", "ActionResultName", "ActionTypeName", "qualifier3Name",
+    "actionName", "ActionResultName", "ActionTypeName", "qualifier3Name", "qualifier4Name",
     "Metres2", "playerpositionName", "playerShirtNumber", "PlayerGameTimeMinutes",
     "x_coord", "y_coord", "x_coord_end", "y_coord_end",
     "ps_timestamp", "ps_endstamp",
@@ -43,9 +43,11 @@ TEAM_FIELDNAMES = [
     "lineout_throws", "lineout_won", "lineout_success_rate",
     "scrum_attempts", "scrum_won", "scrum_success_rate",
     "turnovers_conceded", "turnovers_won",
-    "penalties_conceded",
+    "penalties_conceded", "penalties_conceded_defence",
     "yellow_cards", "red_cards",
     "possession_seconds", "line_breaks", "entries_22", "entries_22_tries",
+    "tackles_dominant", "offload_allowed_tackles",
+    "jackal_attempts", "jackal_won", "turnovers_won_tackle",
 ]
 
 PLAYER_FIELDNAMES = [
@@ -98,9 +100,11 @@ def new_team_stat():
         "lineout_throws": 0, "lineout_won": 0,
         "scrum_attempts": 0, "scrum_won": 0,
         "turnovers_conceded": 0,
-        "penalties_conceded": 0,
+        "penalties_conceded": 0, "penalties_conceded_defence": 0,
         "yellow_cards": 0, "red_cards": 0,
         "possession_seconds": 0.0, "line_breaks": 0, "entries_22": 0, "entries_22_tries": 0,
+        "tackles_dominant": 0, "offload_allowed_tackles": 0,
+        "jackal_attempts": 0, "jackal_won": 0, "turnovers_won_tackle": 0,
     }
 
 
@@ -135,8 +139,9 @@ def process(input_path: str, competition: str):
         i_date, i_season, i_round = idx["datePlayed"], idx["season"], idx["roundNumber"]
         i_home, i_result = idx["isHome"], idx["result"]
         i_hft, i_aft = idx["hometeamFTscore"], idx["awayteamFTscore"]
-        i_action, i_aresult, i_atype, i_q3 = (
+        i_action, i_aresult, i_atype, i_q3, i_q4 = (
             idx["actionName"], idx["ActionResultName"], idx["ActionTypeName"], idx["qualifier3Name"],
+            idx["qualifier4Name"],
         )
         i_metres2 = idx["Metres2"]
         i_pos, i_shirt, i_mins = idx["playerpositionName"], idx["playerShirtNumber"], idx["PlayerGameTimeMinutes"]
@@ -177,6 +182,16 @@ def process(input_path: str, competition: str):
                 ts["tackles_attempted"] += 1
                 if result == "Missed":
                     ts["tackles_missed"] += 1
+                elif result == "Offload Allowed":
+                    ts["offload_allowed_tackles"] += 1
+                elif result == "Turnover Won":
+                    ts["turnovers_won_tackle"] += 1
+                if row[i_q4] == "Dominant Tackle":
+                    ts["tackles_dominant"] += 1
+            elif action == "Collection" and row[i_atype] == "Jackal":
+                ts["jackal_attempts"] += 1
+                if result == "Success":
+                    ts["jackal_won"] += 1
             elif action == "Carry":
                 ts["carries"] += 1
                 ts["carry_metres"] += safe_float(row[i_metres2])
@@ -194,6 +209,8 @@ def process(input_path: str, competition: str):
                     ts["turnovers_conceded"] += 1
             elif action == "Penalty Conceded":
                 ts["penalties_conceded"] += 1
+                if row[i_q3] == "Defence":
+                    ts["penalties_conceded_defence"] += 1
             elif action == "Card":
                 atype = row[i_atype]
                 if atype == "Yellow Card":
@@ -294,11 +311,17 @@ def finalize_team_rows(team_matches: dict) -> list[dict]:
             "scrum_success_rate": rate(s["scrum_won"], s["scrum_attempts"]),
             "turnovers_conceded": s["turnovers_conceded"], "turnovers_won": turnovers_won,
             "penalties_conceded": s["penalties_conceded"],
+            "penalties_conceded_defence": s["penalties_conceded_defence"],
             "yellow_cards": s["yellow_cards"], "red_cards": s["red_cards"],
             "possession_seconds": round(s["possession_seconds"], 1),
             "line_breaks": s["line_breaks"],
             "entries_22": s["entries_22"],
             "entries_22_tries": s["entries_22_tries"],
+            "tackles_dominant": s["tackles_dominant"],
+            "offload_allowed_tackles": s["offload_allowed_tackles"],
+            "jackal_attempts": s["jackal_attempts"],
+            "jackal_won": s["jackal_won"],
+            "turnovers_won_tackle": s["turnovers_won_tackle"],
         })
     rows.sort(key=lambda r: (r["date"] or "", r["team"]))
     return rows
